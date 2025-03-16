@@ -184,8 +184,26 @@ export default function CreatorProfileClient({
   creatorData: ICreator;
   userData: IUser | null;
 }) {
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, sendTransaction, wallet } = useWallet();
   const [isEditing, setIsEditing] = useState(false);
+
+
+  const getRpcEndpoint = () => {
+  if (wallet) {
+    // Check if the connected wallet is Backpack
+    const isBackpack = wallet.adapter.name.toLowerCase().includes('backpack');
+    
+    if (isBackpack) {
+      return "https://sonic.helius-rpc.com/?cluster=testnet";
+    } else {
+      // For Phantom or any other wallet
+      return "https://api.devnet.solana.com";
+    }
+  }
+  
+  // Default fallback if no wallet is connected
+  return "https://api.testnet.solana.com";
+};
 
   // Local state for editing profile
   const [name, setName] = useState(creatorData.name || "");
@@ -324,10 +342,9 @@ export default function CreatorProfileClient({
 
       // --- 1) SOL Transfer ---
       // Use devnet endpoint
-      const connection = new Connection(
-        "https://api.devnet.solana.com",
-        "confirmed"
-      );
+      const connection = new Connection(getRpcEndpoint(), "confirmed");
+
+
       const creatorWallet = new PublicKey(creatorData.userWalletAddress);
       const lamportsToSend = (post.price || 0) * LAMPORTS_PER_SOL;
 

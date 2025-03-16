@@ -140,20 +140,28 @@
   /* Updated gradient to match the specified colors */
   background: linear-gradient(to right, black, #051d38, black);
   color: white; /* Ensuring text is white */
-  border: none;
+  border: 0.3px solid #ff00ff; /* Thin magenta border */
   padding: 0.7rem;
   border-radius: 30px; /* More rounded for modern look */
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(255, 0, 255, 0.5); /* Added magenta glow */
   text-transform: uppercase;
   letter-spacing: 0.5px;
   position: relative;
   overflow: hidden;
   z-index: 1;
 }
+
+.purchaseButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+
 
 .purchaseButton:before {
   content: '';
@@ -169,10 +177,7 @@
   opacity: 0;
 }
 
-.purchaseButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
+
 
 .purchaseButton:hover:before {
   opacity: 1;
