@@ -6,6 +6,7 @@ export interface IUser extends Document {
   password: string;
   walletAddress?: string;
   role: "creator" | "subscriber";
+  subscriptionAmount?: number; // <-- NEW FIELD
 }
 
 const UserSchema = new Schema<IUser>(
@@ -15,6 +16,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, required: true },
     walletAddress: { type: String },
     role: { type: String, default: "subscriber" },
+    subscriptionAmount: { type: Number, default: 0 }, // <-- NEW FIELD
   },
   { timestamps: true }
 );

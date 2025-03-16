@@ -22,7 +22,7 @@ export async function validatePassword(
 }
 
 /**
- * NEW: Find a user by walletAddress
+ * Find a user by walletAddress
  */
 export async function findUserByWalletAddress(
   walletAddress: string
@@ -31,8 +31,8 @@ export async function findUserByWalletAddress(
 }
 
 /**
- * NEW: Create a user given a wallet address and a role.
- * No password/email in this scenario; just store minimal fields.
+ * Create a user given a wallet address and a role.
+ * Also sets default subscriptionAmount = 0.
  */
 export async function createUserWithWallet(
   walletAddress: string,
@@ -44,5 +44,6 @@ export async function createUserWithWallet(
     password: "placeholder", // placeholder, not used
     walletAddress,
     role,
+    subscriptionAmount: 0, // NEW: defaulting to 0
   });
 }

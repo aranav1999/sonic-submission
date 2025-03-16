@@ -1,17 +1,24 @@
 import { dbConnect } from "@/lib/db";
 import { getCreatorById } from "@/modules/creator/creatorService";
+import { findUserByWalletAddress } from "@/modules/user/userService";
 import styles from "./CreatorProfile.module.css";
+import { incrementView } from "@/modules/engagement/engagementService";
+import { ICreator } from "@/modules/creator/creatorModel";
+import { IUser } from "@/modules/user/userModel";
+import CreatorProfileClient from "./CreatorProfileClient";
 
 export const dynamic = "force-dynamic";
 
+interface CreatorProfilePageProps {
+  params: { id: string };
+}
+
 export default async function CreatorProfilePage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: CreatorProfilePageProps) {
   await dbConnect();
-  const creator = await getCreatorById(params.id);
 
+  const creator = await getCreatorById(params.id);
   if (!creator) {
     return (
       <div className={styles.container}>
@@ -20,50 +27,24 @@ export default async function CreatorProfilePage({
     );
   }
 
+  // Count a view
+  await incrementView(params.id);
+
+  // Also fetch the user doc by walletAddress to get subscriptionAmount, etc.
+  let userDoc: IUser | null = null;
+  if (creator.userWalletAddress) {
+    userDoc = await findUserByWalletAddress(creator.userWalletAddress);
+  }
+
+  // Convert to plain JS objects to pass as props
+  const creatorPlain = JSON.parse(JSON.stringify(creator)) as ICreator;
+  const userPlain = userDoc
+    ? (JSON.parse(JSON.stringify(userDoc)) as IUser)
+    : null;
+
   return (
     <div className={styles.container}>
-      {/* Top section with profile info */}
-      <div className={styles.profileSection}>
-        <div className={styles.profileImageContainer}>
-          {creator.imageUrl ? (
-            <img
-              src={creator.imageUrl}
-              alt={creator.name}
-              className={styles.profileImage}
-            />
-          ) : (
-            <div className={styles.noProfileImage}>No profile image</div>
-          )}
-        </div>
-        
-        <div className={styles.profileInfo}>
-          <h1 className={styles.creatorName}>{creator.name}</h1>
-          {creator.description && (
-            <p className={styles.creatorDescription}>{creator.description}</p>
-          )}
-          <p className={styles.walletAddress}>
-            Wallet: {creator.userWalletAddress.substring(0, 6)}...
-            {creator.userWalletAddress.substring(
-              creator.userWalletAddress.length - 4
-            )}
-          </p>
-        </div>
-        
-        <div className={styles.subscribeContainer}>
-          <button className={styles.subscribeButton}>
-            Subscribe for 0.5 SOL
-          </button>
-        </div>
-      </div>
-
-      {/* Bottom section for NFTs */}
-      <div className={styles.nftSection}>
-        <h2 className={styles.sectionTitle}>Creator's NFTs</h2>
-        <div className={styles.nftGrid}>
-          {/* This will be populated later with NFT data */}
-          <p className={styles.emptyMessage}>No NFTs available yet</p>
-        </div>
-      </div>
+      <CreatorProfileClient creatorData={creatorPlain} userData={userPlain} />
     </div>
   );
 }

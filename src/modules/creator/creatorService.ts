@@ -24,10 +24,10 @@ export async function upsertCreator(data: {
       gatingEnabled: gatingEnabled || false,
     });
   } else {
-    // Update existing
+    // Update existing: preserve existing imageUrl if no new one is provided
     creator.name = name;
     creator.description = description || "";
-    creator.imageUrl = imageUrl || "";
+    creator.imageUrl = imageUrl !== "" ? imageUrl : creator.imageUrl;
     if (gatingEnabled !== undefined) {
       creator.gatingEnabled = gatingEnabled;
     }

@@ -5,7 +5,7 @@ import Providers from "./providers";
 import Layout from "@/components/Layout";
 
 export const metadata: Metadata = {
-  title: "NFT OnlyFans MVP",
+  title: "FanPit",
   description: "Now with Solana wallet authentication!",
 };
 

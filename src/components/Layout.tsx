@@ -4,23 +4,39 @@ import React, { ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import { initUser } from "@/redux/user/reducer";
+import { fetchCreatorByWallet } from "@/redux/creator/reducer";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { publicKey } = useWallet();
   const dispatch = useDispatch<AppDispatch>();
 
+  const creatorState = useSelector((state: RootState) => state.creator.creator);
+
   useEffect(() => {
+    // Whenever public key changes, re-init user and fetch creator doc
     if (publicKey) {
-      dispatch(initUser(publicKey.toBase58()));
+      const walletAddress = publicKey.toBase58();
+      dispatch(initUser(walletAddress));
+      dispatch(fetchCreatorByWallet(walletAddress));
     }
   }, [publicKey, dispatch]);
 
+  // Change condition: use creator document existence only
+  const isCreator = Boolean(creatorState && creatorState._id);
+  const creatorId = creatorState?._id?.toString();
+
+  // Build the link label and href
+  const creatorLinkLabel = isCreator ? "My Profile" : "Become a Creator";
+  const creatorLinkHref = isCreator
+    ? `/creator/${creatorId}`
+    : "/creator-onboarding";
+
   return (
     <div className="bg-black min-h-screen">
-      {/* Header spans full width; inner container centers content */}
+      {/* Header */}
       <header className="w-full bg-gradient-to-r from-black via-[#051d38] to-black text-white border-b border-blue-800">
         <div className="max-w-5xl mx-auto px-8 py-6">
           <nav className="flex items-center">
@@ -30,7 +46,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 href="/"
                 className="text-2xl font-bold tracking-tight hover:text-blue-300 transition duration-300"
               >
-                NFT OnlyFans
+                FanPit
               </Link>
               <div className="hidden md:flex space-x-6">
                 {[
@@ -38,7 +54,6 @@ export default function Layout({ children }: { children: ReactNode }) {
                   { href: "/dashboard", label: "Dashboard" },
                   { href: "/onlyfans", label: "OnlyFans" },
                   { href: "/creators", label: "All Creators" },
-                  { href: "/creator-onboarding", label: "Become a Creator" },
                 ].map((link) => (
                   <Link
                     key={link.href}
@@ -49,6 +64,16 @@ export default function Layout({ children }: { children: ReactNode }) {
                     <span className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-blue-300 transition-transform group-hover:scale-x-100"></span>
                   </Link>
                 ))}
+                {/* Dynamic link for Creator Onboarding or My Profile */}
+                <Link
+                  href={creatorLinkHref}
+                  className="relative group transition duration-300"
+                >
+                  <span className="hover:text-blue-300">
+                    {creatorLinkLabel}
+                  </span>
+                  <span className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-blue-300 transition-transform group-hover:scale-x-100"></span>
+                </Link>
               </div>
             </div>
             {/* Wallet Section */}
@@ -65,10 +90,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
+
+      {/* Main Content */}
       <main className="max-w-5xl mx-auto px-8 py-8">{children}</main>
+
+      {/* Footer */}
       <footer className="w-full bg-gradient-to-r from-black via-[#051d38] to-black text-white border-t border-blue-800 px-8 py-4">
         <div className="max-w-5xl mx-auto text-center text-sm">
-          &copy; 2025 NFT OnlyFans MVP
+          &copy; 2025 FanPit MVP
         </div>
       </footer>
     </div>
