@@ -14,7 +14,6 @@ export default function CreatorOnboardingForm() {
   const [gatingEnabled, setGatingEnabled] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [existingProfile, setExistingProfile] = useState(false);
 
   // Fetch existing creator profile if wallet is connected
@@ -24,7 +23,6 @@ export default function CreatorOnboardingForm() {
         try {
           const walletAddress = publicKey.toBase58();
           const response = await fetch(`/api/creators/${walletAddress}`);
-
           if (response.ok) {
             const data = await response.json();
             if (data) {
@@ -44,40 +42,12 @@ export default function CreatorOnboardingForm() {
     fetchCreatorProfile();
   }, [publicKey]);
 
-  async function handleImageUpload(file: File) {
-    setUploadingImage(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-
-      const response = await fetch("/api/upload-image", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const data = await response.json();
-      setImageUrl(data.imageUrl);
-      setMessage("Image uploaded successfully!");
-      return data.imageUrl;
-    } catch (error: any) {
-      console.error("Error uploading image:", error);
-      alert("Failed to upload image. Please try again.");
-      return null;
-    } finally {
-      setUploadingImage(false);
-    }
-  }
-
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImageFile(file);
 
-      // Show a preview of the image
+      // Show a local preview
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
@@ -99,27 +69,19 @@ export default function CreatorOnboardingForm() {
     setMessage(null);
 
     try {
-      let finalImageUrl = imageUrl;
-
-      // Only upload the image if a new file was selected
+      // Build a single multipart/form-data payload
+      const formData = new FormData();
+      formData.append("userWalletAddress", publicKey.toBase58());
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("gatingEnabled", gatingEnabled ? "true" : "false");
       if (imageFile) {
-        const uploadedImageUrl = await handleImageUpload(imageFile);
-        if (uploadedImageUrl) {
-          finalImageUrl = uploadedImageUrl;
-        }
+        formData.append("image", imageFile);
       }
 
-      const userWalletAddress = publicKey.toBase58();
       const res = await fetch("/api/creators", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userWalletAddress,
-          name,
-          description,
-          imageUrl: finalImageUrl,
-          gatingEnabled,
-        }),
+        body: formData, // No JSON.stringify
       });
 
       if (!res.ok) {
@@ -132,7 +94,7 @@ export default function CreatorOnboardingForm() {
       setMessage("Your creator profile has been saved successfully!");
       setExistingProfile(true);
 
-      // Update the form with the returned data
+      // Update the form with returned data
       setName(creator.name);
       setDescription(creator.description || "");
       setImageUrl(creator.imageUrl || "");
@@ -205,7 +167,7 @@ export default function CreatorOnboardingForm() {
                 className={styles.fileInput}
               />
               <label htmlFor="imageUpload" className={styles.uploadButton}>
-                {uploadingImage ? "Uploading..." : "Upload from device"}
+                {imageFile ? "Change image" : "Upload from device"}
               </label>
             </div>
           </div>
@@ -225,7 +187,7 @@ export default function CreatorOnboardingForm() {
         <button
           type="submit"
           className={styles.submitButton}
-          disabled={loading || uploadingImage}
+          disabled={loading}
         >
           {loading
             ? "Saving Profile..."

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
 import Providers from "./providers";
+import Layout from "@/components/Layout";
 
 export const metadata: Metadata = {
   title: "NFT OnlyFans MVP",
@@ -30,10 +31,12 @@ export default function RootLayout({
       </head>
       <body>
         {/* 
-          We now defer all client-side hooks (Redux, wallet, 
-          and your Layout component) to the Providers client component.
+          We wrap Providers, and inside Providers we place our Layout 
+          to ensure the Wallet context is available before Layout uses it.
         */}
-        <Providers>{children}</Providers>
+        <Providers>
+          <Layout>{children}</Layout>
+        </Providers>
       </body>
     </html>
   );

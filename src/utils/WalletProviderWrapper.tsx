@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 
 // Dynamically import the SolanaWalletProvider with no SSR
@@ -14,15 +14,6 @@ export default function WalletProviderWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Removed the mounted check to always wrap children in the provider.
   return <SolanaWalletProvider>{children}</SolanaWalletProvider>;
 }
