@@ -1,0 +1,272 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #e0e0e0;
+}
+
+.profileSection {
+  display: flex;
+  background: linear-gradient(to right, #1a1a1a, #2a2a2a);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+.profileSection:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.profileImageContainer {
+  flex: 0 0 200px;
+  margin-right: 2rem;
+}
+
+.profileImage {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profileImage:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.noProfileImage {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-weight: 500;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.noProfileImage:hover {
+  background-color: #444;
+}
+
+.profileInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.creatorName {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  position: relative;
+  display: inline-block;
+}
+
+.creatorName::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background-color: #9c27b0;
+  transition: width 0.3s ease;
+}
+
+.creatorName:hover::after {
+  width: 100%;
+}
+
+.creatorDescription {
+  font-size: 1rem;
+  color: #bbb;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.walletAddress {
+  font-family: monospace;
+  background-color: #333;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 0.875rem;
+  color: #ddd;
+  transition: background-color 0.2s;
+}
+
+.walletAddress:hover {
+  background-color: #444;
+}
+
+.subscribeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 2rem;
+}
+
+.subscribeButton {
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.subscribeButton:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.subscribeButton:hover {
+  background-color: #7b1fa2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.subscribeButton:hover:before {
+  left: 100%;
+}
+
+.subscribeButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.nftSection {
+  margin-top: 3rem;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background-color: #1a1a1a;
+  transition: box-shadow 0.3s ease;
+}
+
+.nftSection:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #fff;
+  border-bottom: 2px solid #333;
+  padding-bottom: 0.5rem;
+  position: relative;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background-color: #9c27b0;
+  transition: width 0.3s ease;
+}
+
+.sectionTitle:hover::after {
+  width: 100px;
+}
+
+.nftGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.emptyMessage {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background-color: #222;
+  border-radius: 8px;
+  color: #aaa;
+  transition: transform 0.3s ease;
+}
+
+.emptyMessage:hover {
+  transform: translateY(-5px);
+  background-color: #2a2a2a;
+}
+
+@media (max-width: 768px) {
+  .profileSection {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .profileImageContainer {
+    margin-right: 0;
+    margin-bottom: 1.5rem;
+  }
+  
+  .subscribeContainer {
+    padding-left: 0;
+    margin-top: 1.5rem;
+  }
+  
+  .creatorName::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .sectionTitle::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .sectionTitle:hover::after {
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .profileSection {
+    padding: 1.5rem;
+  }
+  
+  .profileImage, .noProfileImage {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .creatorName {
+    font-size: 1.5rem;
+  }
+  
+  .subscribeButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}

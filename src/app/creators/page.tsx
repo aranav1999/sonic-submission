@@ -33,7 +33,11 @@ export default async function CreatorsPage() {
       ) : (
         <div className={styles.grid}>
           {creators.map((creator: ICreator) => (
-            <div key={creator._id?.toString()} className={styles.card}>
+            <Link
+              href={`/creator/${creator._id?.toString()}`}
+              key={creator._id?.toString()}
+              className={styles.card}
+            >
               <div className={styles.imageContainer}>
                 {creator.imageUrl ? (
                   <img
@@ -68,7 +72,7 @@ export default async function CreatorsPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
