@@ -1,14 +1,20 @@
+// File: src/app/creator/[id]/CreatorProfileClient.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { ICreator } from "@/modules/creator/creatorModel";
 import { IUser } from "@/modules/user/userModel";
 import { useWallet } from "@solana/wallet-adapter-react";
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
 import styles from "./CreatorProfile.module.css";
 
-/**
- * The new Post interface (simplified client-side shape).
- */
+// --- Define the Post interface for client-side usage ---
 interface IPost {
   _id: string;
   creatorId: string;
@@ -19,9 +25,7 @@ interface IPost {
   accessibleBy: string[];
 }
 
-/**
- * A small sub-component for creating a new post. This is a modal form.
- */
+// --- Modal component for creating a new post ---
 function CreatePostModal({
   onClose,
   creatorId,
@@ -61,7 +65,7 @@ function CreatePostModal({
     setError(null);
 
     try {
-      // Build multipart form
+      // Build multipart form data
       const formData = new FormData();
       formData.append("creatorId", creatorId);
       formData.append("statusText", statusText);
@@ -172,10 +176,7 @@ function CreatePostModal({
   );
 }
 
-/**
- * Client-side component that displays a creator's profile info and posts.
- * If the connected wallet is the same as the creator's, allows editing and new posts.
- */
+// --- Main CreatorProfileClient component ---
 export default function CreatorProfileClient({
   creatorData,
   userData,
@@ -183,12 +184,14 @@ export default function CreatorProfileClient({
   creatorData: ICreator;
   userData: IUser | null;
 }) {
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const [isEditing, setIsEditing] = useState(false);
 
-  // We store local form states for editing the creator's profile
+  // Local state for editing profile
   const [name, setName] = useState(creatorData.name || "");
-  const [description, setDescription] = useState(creatorData.description || "");
+  const [description, setDescription] = useState(
+    creatorData.description || ""
+  );
   const [imageUrl, setImageUrl] = useState(creatorData.imageUrl || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [gatingEnabled, setGatingEnabled] = useState(
@@ -200,15 +203,17 @@ export default function CreatorProfileClient({
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Check if connected user is the same as this creator's wallet
+  // State for posts and modal
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState("");
+
+  // Check if the connected wallet is the creator’s wallet
   const canEdit =
     publicKey && publicKey.toBase58() === creatorData.userWalletAddress;
 
-  // State for posts
-  const [posts, setPosts] = useState<IPost[]>([]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
-  // Fetch the creator's posts
+  // Fetch posts when component mounts or creatorData._id changes
   useEffect(() => {
     async function fetchPosts() {
       if (creatorData._id) {
@@ -226,28 +231,21 @@ export default function CreatorProfileClient({
     fetchPosts();
   }, [creatorData._id]);
 
-  // Only show user the post if not gated OR if canEdit OR if user's wallet is in "accessibleBy"
+  // Utility: determine if a post is viewable by the current user
   const userWallet = publicKey?.toBase58();
   function canViewPost(post: IPost): boolean {
-    if (!post.isGated) {
-      return true; // public post
-    }
-    // if the user is the creator, always can see
+    if (!post.isGated) return true;
     if (canEdit) return true;
-    // otherwise must be in accessibleBy
-    if (userWallet && post.accessibleBy.includes(userWallet)) {
-      return true;
-    }
+    if (userWallet && post.accessibleBy.includes(userWallet)) return true;
     return false;
   }
 
-  // Handle the file input for updating profile
+  // Handle file input change for updating profile image
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImageFile(file);
 
-      // Local preview
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
@@ -258,6 +256,7 @@ export default function CreatorProfileClient({
     }
   }
 
+  // Save profile changes (existing functionality)
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!publicKey) {
@@ -269,7 +268,7 @@ export default function CreatorProfileClient({
     setMessage(null);
 
     try {
-      // 1) Update the Creator doc
+      // Update Creator doc via multipart/form-data
       const formData = new FormData();
       formData.append("userWalletAddress", publicKey.toBase58());
       formData.append("name", name);
@@ -283,13 +282,12 @@ export default function CreatorProfileClient({
         method: "POST",
         body: formData,
       });
-
       if (!creatorRes.ok) {
         const { error } = await creatorRes.json();
         throw new Error(`Creator update error: ${error}`);
       }
 
-      // 2) Update the user doc (subscriptionAmount)
+      // Update user doc (subscriptionAmount)
       const userPayload = {
         walletAddress: publicKey.toBase58(),
         subscriptionAmount,
@@ -299,7 +297,6 @@ export default function CreatorProfileClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userPayload),
       });
-
       if (!userRes.ok) {
         const { error } = await userRes.json();
         throw new Error(`User update error: ${error}`);
@@ -315,15 +312,74 @@ export default function CreatorProfileClient({
     }
   }
 
-  // --------------------
-  // RENDER LOGIC
-  // --------------------
+  // --- New Feature: Execute SOL trade and unlock gated post ---
+  async function handlePurchasePost(post: IPost) {
+    try {
+      if (!publicKey) {
+        alert("No wallet connected!");
+        return;
+      }
+      setPurchaseError("");
+      setPurchasing(true);
 
-  // VIEW MODE for the profile
+      // --- 1) SOL Transfer ---
+      // Use devnet endpoint
+      const connection = new Connection(
+        "https://api.devnet.solana.com",
+        "confirmed"
+      );
+      const creatorWallet = new PublicKey(creatorData.userWalletAddress);
+      const lamportsToSend = (post.price || 0) * LAMPORTS_PER_SOL;
+
+      // Create transaction for SOL transfer
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: creatorWallet,
+          lamports: lamportsToSend,
+        })
+      );
+
+      // Send the transaction
+      const signature = await sendTransaction(transaction, connection);
+      console.log("Transaction signature:", signature);
+      await connection.confirmTransaction(signature, "confirmed");
+      console.log("SOL transfer confirmed on devnet.");
+
+      // --- 2) Unlock the Post ---
+      const unlockRes = await fetch("/api/posts/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: post._id,
+          userWallet: publicKey.toBase58(),
+        }),
+      });
+      if (!unlockRes.ok) {
+        const { error } = await unlockRes.json();
+        throw new Error(error || "Failed to unlock post");
+      }
+      const { post: updatedPost } = await unlockRes.json();
+
+      // Update local posts state so that the unlocked post is visible
+      setPosts((prev) =>
+        prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
+      );
+
+      alert("Purchase successful! You now have access to this post.");
+    } catch (err: any) {
+      console.error("Purchase post error:", err);
+      setPurchaseError(err.message || "Something went wrong during purchase.");
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  // --- Render UI ---
   if (!isEditing) {
     return (
       <>
-        {/* Basic Profile info */}
+        {/* Profile Display */}
         <div className={styles.profileSection}>
           <div className={styles.profileImageContainer}>
             {imageUrl ? (
@@ -332,21 +388,19 @@ export default function CreatorProfileClient({
               <div className={styles.noProfileImage}>No profile image</div>
             )}
           </div>
-
           <div className={styles.profileInfo}>
             <h1 className={styles.creatorName}>{name}</h1>
             {description && (
               <p className={styles.creatorDescription}>{description}</p>
             )}
             <p className={styles.walletAddress}>
-              Wallet: {creatorData.userWalletAddress.substring(0, 6)}...
+              Wallet:{" "}
+              {creatorData.userWalletAddress.substring(0, 6)}...
               {creatorData.userWalletAddress.substring(
                 creatorData.userWalletAddress.length - 4
               )}
             </p>
           </div>
-
-          {/* Subscription button (publicly visible) */}
           <div className={styles.subscribeContainer}>
             <button className={styles.subscribeButton}>
               Subscribe for {userData?.subscriptionAmount || 0} SOL
@@ -354,7 +408,7 @@ export default function CreatorProfileClient({
           </div>
         </div>
 
-        {/* Show an Edit button if the connected user matches */}
+        {/* Edit Button (if owner) */}
         {canEdit && (
           <div style={{ textAlign: "right", marginBottom: "1rem" }}>
             <button
@@ -371,7 +425,6 @@ export default function CreatorProfileClient({
           <h2 className={styles.sectionTitle}>
             {canEdit ? "My Posts" : "Creator's Posts"}
           </h2>
-
           {canEdit && (
             <button
               className={styles.subscribeButton}
@@ -380,52 +433,128 @@ export default function CreatorProfileClient({
               Create New Post
             </button>
           )}
-
           <div className={styles.nftGrid} style={{ marginTop: "1rem" }}>
             {posts.length === 0 ? (
               <p className={styles.emptyMessage}>No posts yet</p>
             ) : (
               posts.map((post) => {
-                // Only show post if user can view
                 const isVisible = canViewPost(post);
                 return (
-                  <div
-                    key={post._id}
-                    style={{
-                      border: "1px solid #555",
-                      padding: "1rem",
-                      borderRadius: 8,
-                      marginBottom: 10,
-                    }}
-                  >
-                    {/* If the post is not visible, we can just show a "locked" message */}
-                    {!isVisible ? (
-                      <div style={{ color: "#999" }}>
-                        <p>
-                          <strong>Locked Content</strong> - Gated post
-                        </p>
-                        <p>Price: {post.price} SOL</p>
+                  <div key={post._id} className={styles.postCard}>
+                    {!isVisible && post.isGated ? (
+                      <div className={styles.gatedPostContainer}>
+                        {post.imageUrl ? (
+                          <div className={styles.blurredImageContainer}>
+                            <img
+                              src={post.imageUrl}
+                              alt="gated content"
+                              className={styles.blurredImage}
+                            />
+                            <div className={styles.imageOverlay}>
+                              <div className={styles.lockIcon}>
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                  <path
+                                    d="M7 11V7C7 5.93913 7.42143 4.92172 8.17157 4.17157C8.92172 3.42143 9.93913 3 11 3H13C14.0609 3 15.0783 3.42143 15.8284 4.17157C16.5786 4.92172 17 5.93913 17 7V11"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </div>
+                              <p className={styles.gatedContentText}>
+                                Premium Content
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={styles.noImagePlaceholder}>
+                            <div className={styles.lockIcon}>
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"
+                                  stroke="white"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M7 11V7C7 5.93913 7.42143 4.92172 8.17157 4.17157C8.92172 3.42143 9.93913 3 11 3H13C14.0609 3 15.0783 3.42143 15.8284 4.17157C16.5786 4.92172 17 5.93913 17 7V11"
+                                  stroke="white"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                            <p className={styles.gatedContentText}>
+                              Premium Content
+                            </p>
+                          </div>
+                        )}
+                        <div className={styles.postContent}>
+                          <p className={styles.gatedPostTitle}>
+                            <span className={styles.lockIndicator}>🔒</span>{" "}
+                            {post.statusText.length > 30
+                              ? `${post.statusText.substring(0, 30)}...`
+                              : post.statusText}
+                          </p>
+                          <p className={styles.gatedPriceInfo}>
+                            {post.price} SOL will be deducted from your wallet
+                          </p>
+                          <button
+                            className={styles.purchaseButton}
+                            onClick={() => handlePurchasePost(post)}
+                            disabled={purchasing}
+                          >
+                            {purchasing
+                              ? "Processing..."
+                              : `Unlock for ${post.price} SOL`}
+                          </button>
+                          {purchaseError && (
+                            <p style={{ color: "red" }}>{purchaseError}</p>
+                          )}
+                        </div>
                       </div>
                     ) : (
-                      <>
-                        {post.imageUrl && (
+                      <div className={styles.postContent}>
+                        {post.imageUrl ? (
                           <img
                             src={post.imageUrl}
                             alt="post"
-                            style={{
-                              width: "100%",
-                              height: "auto",
-                              marginBottom: 10,
-                            }}
+                            className={styles.postImage}
                           />
+                        ) : (
+                          <div className={styles.noImagePlaceholder}>
+                            <p>No image available</p>
+                          </div>
                         )}
-                        <p>{post.statusText}</p>
+                        <p className={styles.postText}>{post.statusText}</p>
                         {post.isGated && (
-                          <p style={{ color: "#ff4081" }}>
-                            Gated Post (Price: {post.price} SOL)
-                          </p>
+                          <div className={styles.gatedBadge}>
+                            Premium Content • {post.price} SOL
+                          </div>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
                 );
@@ -436,18 +565,18 @@ export default function CreatorProfileClient({
 
         {showCreateModal && (
           <CreatePostModal
-            creatorId={creatorData._id as string || ""}
+            creatorId={creatorData._id as string}
             onClose={() => setShowCreateModal(false)}
-            onPostCreated={(newPost) => {
-              setPosts((prev) => [newPost, ...prev]);
-            }}
+            onPostCreated={(newPost) =>
+              setPosts((prev) => [newPost, ...prev])
+            }
           />
         )}
       </>
     );
   }
 
-  // EDIT MODE for the profile
+  // --- Edit Mode for Profile ---
   return (
     <div className={styles.editFormContainer}>
       <form onSubmit={handleSaveProfile} className={styles.editForm}>
@@ -529,7 +658,6 @@ export default function CreatorProfileClient({
           </button>
         </div>
       </form>
-
       {message && <div className={styles.message}>{message}</div>}
     </div>
   );
