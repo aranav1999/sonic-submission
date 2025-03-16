@@ -7,8 +7,6 @@ export default function NFTDetailClient({ nft }: { nft: INFT }) {
   const [likes, setLikes] = useState(0);
 
   async function handleBuy() {
-    // Instead of session checks, 
-    // you might check if wallet is connected or just do an open transaction
     try {
       const res = await fetch("/api/nfts/trade", {
         method: "POST",

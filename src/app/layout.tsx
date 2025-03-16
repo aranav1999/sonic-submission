@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import WalletProviderWrapper from "@/utils/WalletProviderWrapper";
-import Layout from "@/components/Layout"; // This is a client component
+import Layout from "@/components/Layout";
 
 export const metadata: Metadata = {
   title: "NFT OnlyFans MVP",

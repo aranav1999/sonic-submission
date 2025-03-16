@@ -6,9 +6,6 @@ if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable in .env");
 }
 
-/**
- * A simple cached connection approach for MongoDB in Next.js
- */
 let cached = (global as any).mongoose;
 
 if (!cached) {

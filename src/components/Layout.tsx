@@ -1,13 +1,11 @@
-"use client"; // make sure this is a Client Component
+"use client";
 
 import React, { ReactNode } from "react";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-// 1) Import the useWallet hook
 import { useWallet } from "@solana/wallet-adapter-react";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  // 2) Destructure publicKey from useWallet()
   const { publicKey } = useWallet();
 
   return (
@@ -16,11 +14,10 @@ export default function Layout({ children }: { children: ReactNode }) {
         <nav style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <Link href="/">Home</Link>
           <Link href="/dashboard">Dashboard</Link>
+          <Link href="/onlyfans">OnlyFans</Link>
 
-          {/* Renders the connect/disconnect button */}
           <WalletMultiButton />
 
-          {/* 3) If publicKey is present, show it; otherwise "Not connected" */}
           {publicKey ? (
             <span style={{ marginLeft: "auto" }}>
               Connected: {publicKey.toBase58()}

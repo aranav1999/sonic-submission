@@ -1,7 +1,10 @@
 "use client";
 
 import { ReactNode, useMemo } from "react";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -12,8 +15,12 @@ export default function SolanaWalletProvider({
   children: ReactNode;
 }) {
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+
+  // Sonic Devnet endpoint
+  const endpoint = "https://sonic.helius-rpc.com/";
+
   return (
-    <ConnectionProvider endpoint="https://api.mainnet-beta.solana.com">
+    <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>

@@ -1,0 +1,103 @@
+.container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.pageTitle {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.creatorList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.creatorCard {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creatorCard img {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.nameRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tipButton,
+.mintButton {
+    padding: 8px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.tipButton {
+    background-color: #0099cc;
+}
+
+.mintButton {
+    background-color: #6633cc;
+}
+
+.sectionTitle {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+}
+
+.mintSection {
+    margin-top: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.formRow {
+    display: flex;
+    flex-direction: column;
+}
+
+.formRow label {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.formRow input {
+    padding: 8px;
+    font-size: 14px;
+}
+
+.submitButton {
+    padding: 10px;
+    margin-top: 8px;
+    background-color: #ff6600;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.message {
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
