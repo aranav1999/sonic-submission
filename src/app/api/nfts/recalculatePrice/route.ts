@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import { getAllNFTs, updateNFTPrice } from "@/modules/nft/nftService";
 import { getEngagement } from "@/modules/engagement/engagementService";
 import { getTradesByNFT } from "@/modules/trade/tradeService";
 import { calculateNewPrice } from "@/utils/dynamicPricing";
-import { INFT } from "@/modules/nft/nftModel";
 
-export async function POST(_: NextRequest) {
+export async function POST() {
   try {
     await dbConnect();
     const allNFTs = await getAllNFTs();

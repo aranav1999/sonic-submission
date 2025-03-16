@@ -20,3 +20,29 @@ export async function validatePassword(
 ): Promise<boolean> {
   return bcrypt.compare(inputPassword, user.password);
 }
+
+/**
+ * NEW: Find a user by walletAddress
+ */
+export async function findUserByWalletAddress(
+  walletAddress: string
+): Promise<IUser | null> {
+  return User.findOne({ walletAddress });
+}
+
+/**
+ * NEW: Create a user given a wallet address and a role.
+ * No password/email in this scenario; just store minimal fields.
+ */
+export async function createUserWithWallet(
+  walletAddress: string,
+  role: "creator" | "subscriber" = "subscriber"
+): Promise<IUser> {
+  return User.create({
+    username: `user-${walletAddress.substring(0, 6)}`, // A simple auto-username
+    email: `wallet-${walletAddress}@example.com`, // Fake email, optional
+    password: "placeholder", // placeholder, not used
+    walletAddress,
+    role,
+  });
+}

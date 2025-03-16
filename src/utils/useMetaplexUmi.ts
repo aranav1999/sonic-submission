@@ -3,7 +3,6 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { mplCore } from "@metaplex-foundation/mpl-core";
-import { PublicKey } from "@metaplex-foundation/umi";
 
 /**
  * Custom identity plugin for UMI that wraps the connected wallet adapter.

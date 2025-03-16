@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useEffect, useState } from "react";
 import {
   ConnectionProvider,
   WalletProvider,
@@ -14,6 +14,12 @@ export default function SolanaWalletProvider({
 }: {
   children: ReactNode;
 }) {
+  // Add client-side only rendering
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
   // Sonic Devnet endpoint
@@ -22,7 +28,7 @@ export default function SolanaWalletProvider({
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
+        <WalletModalProvider>{mounted && children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   );

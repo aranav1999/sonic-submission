@@ -2,12 +2,16 @@
     padding: 20px;
     max-width: 900px;
     margin: 0 auto;
+    background: #121212;
+    /* main background or remove if the parent is body */
+    color: #ededed;
 }
 
 .pageTitle {
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 1rem;
+    color: var(--accent);
 }
 
 .creatorList {
@@ -18,12 +22,13 @@
 }
 
 .creatorCard {
-    border: 1px solid #ddd;
+    background: #1e1e1e;
     border-radius: 6px;
     padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
 .creatorCard img {
@@ -36,6 +41,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #ededed;
 }
 
 .tipButton,
@@ -44,29 +50,34 @@
     border: none;
     color: #fff;
     cursor: pointer;
+    border-radius: 4px;
 }
 
 .tipButton {
     background-color: #0099cc;
+    /* Could also use var(--accent) if you prefer */
 }
 
 .mintButton {
     background-color: #6633cc;
+    /* Or an accent variant */
 }
 
 .sectionTitle {
     font-size: 1.3rem;
     margin-top: 2rem;
+    color: var(--accent);
 }
 
 .mintSection {
     margin-top: 1rem;
-    border: 1px solid #ddd;
+    background: #1e1e1e;
     border-radius: 6px;
     padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
 .formRow {
@@ -77,17 +88,22 @@
 .formRow label {
     font-weight: 600;
     margin-bottom: 4px;
+    color: #ededed;
 }
 
 .formRow input {
     padding: 8px;
     font-size: 14px;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    color: #ededed;
+    border-radius: 4px;
 }
 
 .submitButton {
     padding: 10px;
     margin-top: 8px;
-    background-color: #ff6600;
+    background-color: var(--accent);
     color: #fff;
     border: none;
     cursor: pointer;
@@ -95,9 +111,14 @@
     border-radius: 4px;
 }
 
+.submitButton:hover {
+    opacity: 0.9;
+}
+
 .message {
     margin-top: 8px;
     padding: 8px;
-    background-color: #f5f5f5;
+    background-color: #2a2a2a;
     border-radius: 4px;
+    color: var(--accent);
 }

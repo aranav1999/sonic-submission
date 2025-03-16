@@ -29,9 +29,13 @@ export default function TransferNFTForm() {
 
     try {
       const result = await transfer(umi, {
-        asset: publicKey(mintAddress),
-        toOwner: publicKey(recipientAddress),
-        owner: umi.identity.publicKey,
+        asset: {
+          publicKey: publicKey(mintAddress),
+          owner: umi.identity.publicKey,
+          oracles: [],
+          lifecycleHooks: [],
+        },
+        newOwner: publicKey(recipientAddress),
       }).sendAndConfirm(umi);
 
       setTxSignature(result.signature.toString());

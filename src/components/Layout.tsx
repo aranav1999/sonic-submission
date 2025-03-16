@@ -1,12 +1,23 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { initUser } from "@/redux/user/reducer";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { publicKey } = useWallet();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // NEW: Dispatch to Redux instead of direct fetch
+  useEffect(() => {
+    if (publicKey) {
+      dispatch(initUser(publicKey.toBase58()));
+    }
+  }, [publicKey, dispatch]);
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
@@ -15,6 +26,8 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Link href="/">Home</Link>
           <Link href="/dashboard">Dashboard</Link>
           <Link href="/onlyfans">OnlyFans</Link>
+          <Link href="/creators">All Creators</Link>
+          <Link href="/creator-onboarding">Become a Creator</Link>
 
           <WalletMultiButton />
 

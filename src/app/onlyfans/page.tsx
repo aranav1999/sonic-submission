@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import styles from "./OnlyFans.module.css";
-import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useMetaplexUmi } from "@/utils/useMetaplexUmi";
@@ -41,6 +41,8 @@ export default function OnlyFansPage() {
   // --------------------------
   // 1) One-click tipping logic
   // --------------------------
+  const connection = new Connection("https://devnet.sonic.game", "confirmed");
+
   async function handleTip(creatorPkString: string) {
     try {
       if (!userPubKey) {
@@ -60,10 +62,8 @@ export default function OnlyFansPage() {
         })
       );
 
-      // Send the transaction
-      const signature = await sendTransaction(tx, {
-        skipPreflight: false,
-      });
+      // Send the transaction with the connection
+      const signature = await sendTransaction(tx, connection);
 
       setTipFeedback(`Tip transaction sent! Tx Signature: ${signature}`);
     } catch (error: any) {
@@ -71,6 +71,7 @@ export default function OnlyFansPage() {
       setTipFeedback(`Error sending tip: ${error.message}`);
     }
   }
+
 
   // --------------------------------------------------
   // 2) "Mint NFT for X SOL to chat" demonstration

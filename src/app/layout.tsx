@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import WalletProviderWrapper from "@/utils/WalletProviderWrapper";
-import Layout from "@/components/Layout";
+import Script from "next/script";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "NFT OnlyFans MVP",
@@ -16,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
+        <Script
+          id="crypto-polyfill"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if (typeof window !== 'undefined' && !globalThis.nodeCrypto) {
@@ -27,9 +29,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <WalletProviderWrapper>
-          <Layout>{children}</Layout>
-        </WalletProviderWrapper>
+        {/* 
+          We now defer all client-side hooks (Redux, wallet, 
+          and your Layout component) to the Providers client component.
+        */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

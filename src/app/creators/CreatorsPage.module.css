@@ -1,0 +1,141 @@
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.title {
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #cfcfcf;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.emptyState {
+    text-align: center;
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 40px;
+    margin: 40px auto;
+    max-width: 600px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.emptyStateText {
+    font-size: 1.2rem;
+    color: #ededed;
+    margin-bottom: 20px;
+}
+
+.emptyStateLink {
+    display: inline-block;
+    background-color: var(--accent);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.emptyStateLink:hover {
+    opacity: 0.9;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.card {
+    background: #1e1e1e;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.6);
+}
+
+.imageContainer {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    background: #2a2a2a;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.noImage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.content {
+    padding: 20px;
+}
+
+.creatorName {
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.description {
+    color: #ededed;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.walletAddress {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 15px;
+    word-break: break-all;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.gatedBadge {
+    background-color: rgba(255, 64, 129, 0.2);
+    color: var(--accent);
+}
+
+.nonGatedBadge {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
