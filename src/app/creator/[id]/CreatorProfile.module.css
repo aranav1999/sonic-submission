@@ -41,11 +41,10 @@
 .blurredImageContainer {
   position: relative;
   overflow: hidden;
-  height: 300px; /* Increased height for more prominence */
+  height: 300px;
   margin: 0.8rem;
   border-radius: 8px;
-  /* Remove thick border and replace with subtle multicolored shadow */
-  box-shadow: 
+  box-shadow:
     0 0 5px rgba(156, 39, 176, 0.5),
     0 0 10px rgba(3, 169, 244, 0.3),
     0 0 15px rgba(255, 64, 129, 0.3),
@@ -57,7 +56,7 @@
   height: 100%;
   object-fit: cover;
   filter: blur(12px);
-  transform: scale(1.1); /* Prevent blur edges from showing */
+  transform: scale(1.1);
   opacity: 0.7;
 }
 
@@ -71,7 +70,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
 }
 
 .lockIcon {
@@ -91,9 +90,11 @@
   0% {
     box-shadow: 0 0 0 0 rgba(156, 39, 176, 0.7);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(156, 39, 176, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(156, 39, 176, 0);
   }
@@ -137,17 +138,16 @@
 
 .purchaseButton {
   width: 100%;
-  /* Updated gradient to match the specified colors */
   background: linear-gradient(to right, black, #051d38, black);
-  color: white; /* Ensuring text is white */
-  border: 0.3px solid #ff00ff; /* Thin magenta border */
+  color: white;
+  border: 0.3px solid #ff00ff;
   padding: 0.7rem;
-  border-radius: 30px; /* More rounded for modern look */
+  border-radius: 30px;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(255, 0, 255, 0.5); /* Added magenta glow */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(255, 0, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   position: relative;
@@ -160,9 +160,6 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-
-
-
 .purchaseButton:before {
   content: '';
   position: absolute;
@@ -170,14 +167,11 @@
   left: 0;
   width: 100%;
   height: 100%;
-  /* Slightly different gradient for hover effect */
   background: linear-gradient(to right, #051d38, black, #051d38);
   z-index: -1;
   transition: opacity 0.3s ease;
   opacity: 0;
 }
-
-
 
 .purchaseButton:hover:before {
   opacity: 1;
@@ -191,7 +185,7 @@
 /* Regular Post Styles */
 .postImage {
   width: 100%;
-  height: 300px; /* Match the gated image height */
+  height: 300px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 0.8rem;
@@ -225,14 +219,12 @@
   color: #aaa;
   border-radius: 8px;
   margin: 0.8rem;
-  /* Replace thick border with subtle shadow */
-  box-shadow: 
+  box-shadow:
     0 0 5px rgba(156, 39, 176, 0.5),
     0 0 10px rgba(3, 169, 244, 0.3),
     0 0 15px rgba(255, 64, 129, 0.3),
     0 0 20px rgba(255, 193, 7, 0.2);
 }
-
 
 .profileSection:hover {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
@@ -315,7 +307,6 @@
 
 .walletAddress {
   font-family: monospace;
-  /* background-color: #333; */
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   display: inline-block;
@@ -323,8 +314,6 @@
   color: #ddd;
   transition: background-color 0.2s;
 }
-
-
 
 .subscribeContainer {
   display: flex;
@@ -569,7 +558,7 @@
 }
 
 /* ----------------------------
-   Modal Styles for Create Post
+   Modal Styles for Create/Edit Post
 ---------------------------- */
 .modalOverlay {
   position: fixed;
