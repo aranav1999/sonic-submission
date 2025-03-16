@@ -194,7 +194,7 @@ export default function CreatorProfileClient({
     const isBackpack = wallet.adapter.name.toLowerCase().includes('backpack');
     
     if (isBackpack) {
-      return "https://sonic.helius-rpc.com/?cluster=testnet";
+      return "https://sonic.helius-rpc.com/?cluster=testnet.v1";
     } else {
       // For Phantom or any other wallet
       return "https://api.devnet.solana.com";

@@ -51,8 +51,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               <div className="hidden md:flex space-x-6">
                 {[
                   { href: "/", label: "Home" },
-                  { href: "/dashboard", label: "Dashboard" },
-                  { href: "/onlyfans", label: "OnlyFans" },
+                  // { href: "/dashboard", label: "Dashboard" },
+                  // { href: "/onlyfans", label: "OnlyFans" },
                   { href: "/creators", label: "All Creators" },
                 ].map((link) => (
                   <Link
