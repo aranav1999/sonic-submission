@@ -4,8 +4,8 @@ export default function Home() {
   return (
   <>
   
-  <div >
-      <h1>Welcome to NFT OnlyFans MVP!</h1>
+  <div className="w-full h-[500px]">
+      <h1 className="text-[50px]">Welcome to NFT OnlyFans MVP!</h1>
       <p>
         This is a home page. Use the <strong>Connect Wallet</strong> button in
         the top navigation to connect your Phantom Wallet (or another Solana
