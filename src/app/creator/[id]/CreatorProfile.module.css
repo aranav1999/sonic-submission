@@ -18,10 +18,13 @@
 .profileSection {
   display: flex;
   flex-direction: column;
-  width: 50%; /* Decreased from 100% to 80% */
-  max-width: 900px; /* Add a max-width */
-  margin: 0 auto; /* Center the profile section */
-  background: linear-gradient(to top, black, #26171d);
+  width: 50%;
+  /* Decreased from 100% to 80% */
+  max-width: 900px;
+  /* Add a max-width */
+  margin: 0 auto;
+  /* Center the profile section */
+  background: linear-gradient(to top, black, #122b1f);
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -32,14 +35,16 @@
 
 /* Post Card Styles */
 .postCard {
-  background: linear-gradient(to right, #26171d, black);
+  background: linear-gradient(to right, #122b1f, black);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   margin-bottom: 1.5rem;
-  width: 300px; /* Fixed width for post cards */
-  height: 450px; /* Fixed height for consistency */
+  width: 300px;
+  /* Fixed width for post cards */
+  height: 450px;
+  /* Fixed height for consistency */
   display: flex;
   flex-direction: column;
 }
@@ -60,7 +65,8 @@
 .blurredImageContainer {
   position: relative;
   overflow: hidden;
-  height: 250px; /* Fixed height */
+  height: 250px;
+  /* Fixed height */
   margin: 0.8rem;
   border-radius: 8px;
   box-shadow:
@@ -135,7 +141,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent text overflow */
+  overflow: hidden;
+  /* Prevent text overflow */
 }
 
 .gatedPostTitle {
@@ -161,7 +168,7 @@
 
 .purchaseButton {
   width: 100%;
-  background: linear-gradient(to right, black, #26171d, black);
+  background: linear-gradient(to right, black, #122b1f, black);
   color: white;
   border: 0.3px solid #ff00ff;
   padding: 0.7rem;
@@ -190,7 +197,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, #26171d, black, #26171d);
+  background: linear-gradient(to right, #122b1f, black, #122b1f);
   z-index: -1;
   transition: opacity 0.3s ease;
   opacity: 0;
@@ -208,7 +215,8 @@
 /* Regular Post Styles */
 .postImage {
   width: 100%;
-  height: 250px; /* Fixed height */
+  height: 250px;
+  /* Fixed height */
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 0.8rem;
@@ -222,7 +230,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-line-clamp: 3;
+  /* Limit to 3 lines */
   -webkit-box-orient: vertical;
 }
 
@@ -238,7 +247,8 @@
 }
 
 .noImagePlaceholder {
-  height: 250px; /* Fixed height */
+  height: 250px;
+  /* Fixed height */
   background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
   display: flex;
   flex-direction: column;
@@ -259,8 +269,10 @@
 }
 
 .profileImage {
-  width: 300px; /* Fixed width */
-  height: 300px; /* Fixed height */
+  width: 300px;
+  /* Fixed width */
+  height: 300px;
+  /* Fixed height */
   border-radius: 6%;
   object-fit: cover;
   border: 3px solid #333;
@@ -274,8 +286,10 @@
 }
 
 .noProfileImage {
-  width: 300px; /* Fixed width */
-  height: 300px; /* Fixed height */
+  width: 300px;
+  /* Fixed width */
+  height: 300px;
+  /* Fixed height */
   border-radius: 6%;
   background-color: #333;
   display: flex;
@@ -410,12 +424,13 @@
 ---------------------------- */
 .nftSection {
   margin-top: 3rem;
-  border: 1.2px solid #26171d;
+  border: 1.2px solid #122b1f;
   border-radius: 12px;
   padding: 1.5rem;
   background-color: black;
   transition: box-shadow 0.3s ease;
-  width: 100%; /* Keep at full width */
+  width: 100%;
+  /* Keep at full width */
 }
 
 .nftSection:hover {
@@ -426,7 +441,7 @@
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   color: #fff;
-  border-bottom: 2px solid #26171d;
+  border-bottom: 2px solid #122b1f;
   padding-bottom: 0.5rem;
   position: relative;
 }
@@ -448,9 +463,11 @@
 
 .nftGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Fixed width columns */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* Fixed width columns */
   gap: 1.5rem;
-  justify-items: center; /* Center items horizontally */
+  justify-items: center;
+  /* Center items horizontally */
 }
 
 .emptyMessage {
@@ -679,11 +696,12 @@
 
   .profileImageContainer {
     display: flex;
-    justify-content: center; /* Center the image horizontally */
+    justify-content: center;
+    /* Center the image horizontally */
     width: 100%;
     margin-bottom: 1.5rem;
   }
-  
+
 
   .subscribeContainer {
     padding-left: 0;
@@ -703,11 +721,11 @@
   .sectionTitle:hover::after {
     width: 80px;
   }
-  
+
   .nftGrid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
-  
+
   .postCard {
     width: 250px;
   }
@@ -736,14 +754,13 @@
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
   }
-  
+
   .nftGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .postCard {
     width: 100%;
     max-width: 300px;
   }
 }
-

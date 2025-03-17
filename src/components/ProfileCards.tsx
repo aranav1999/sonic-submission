@@ -16,7 +16,7 @@ const MarqueeCards = async () => {
 
   if (creators.length === 0) {
     return (
-      <div className="w-full text-center py-6 text-[#ff9ec6]">
+      <div className="w-full text-center py-6 text-[#16f195]">
         No creators found. Be the first to join our community!
       </div>
     );
@@ -41,24 +41,24 @@ const MarqueeCards = async () => {
                 unoptimized
               />
             ) : (
-              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#2f1f25] rounded-2xl">
-                <span className="text-[#ff9ec6]">No Image</span>
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#0e1f1a] rounded-2xl">
+                <span className="text-[#16f195]">No Image</span>
               </div>
             )}
-            
+
             {creator.gatingEnabled ? (
-              <span className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-[#2f1f25] bg-[#ff9ec6] rounded-tr-lg">
+              <span className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-[#0e1f1a] bg-[#16f195] rounded-tr-lg">
                 Token Gated Content
               </span>
             ) : (
-              <span className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-[#ff9ec6] bg-[#2f1f25] rounded-tr-lg">
+              <span className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-[#16f195] bg-[#0e1f1a] rounded-tr-lg">
                 Public Content
               </span>
             )}
-            
-            <div className="absolute bottom-0 h-[60px] w-full bg-[#2f1f25] rounded-b-2xl flex flex-col p-2 space-y-1 transition-all duration-300 group-hover:h-[70px]">
+
+            <div className="absolute bottom-0 h-[60px] w-full bg-[#0e1f1a] rounded-b-2xl flex flex-col p-2 space-y-1 transition-all duration-300 group-hover:h-[70px]">
               <div className="flex flex-row items-center space-x-2">
-                <div className="rounded-full w-10 h-10 overflow-hidden border-2 border-[#ff9ec6] group-hover:border-[3px] transition-all duration-300">
+                <div className="rounded-full w-10 h-10 overflow-hidden border-2 border-[#16f195] group-hover:border-[3px] transition-all duration-300">
                   {creator.imageUrl ? (
                     <Image
                       src={creator.imageUrl}
@@ -69,8 +69,8 @@ const MarqueeCards = async () => {
                       unoptimized
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#ff9ec6] rounded-full">
-                      <span className="text-[#2f1f25]">?</span>
+                    <div className="w-full h-full flex items-center justify-center bg-[#16f195] rounded-full">
+                      <span className="text-[#0e1f1a]">?</span>
                     </div>
                   )}
                 </div>
@@ -79,7 +79,7 @@ const MarqueeCards = async () => {
                     {creator.name || "Unknown Creator"}
                   </span>
                   {creator.description && (
-                    <span className="text-xs text-[#ff9ec6]/70 truncate group-hover:text-[#ff9ec6] transition-all duration-300">
+                    <span className="text-xs text-[#16f195]/70 truncate group-hover:text-[#16f195] transition-all duration-300">
                       {creator.description}
                     </span>
                   )}

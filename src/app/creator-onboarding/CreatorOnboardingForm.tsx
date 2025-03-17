@@ -15,8 +15,9 @@ import {
   createCollection,
   ruleSet,
 } from "@metaplex-foundation/mpl-core";
-import { toWeb3JsPublicKey } from "@metaplex-foundation/umi-web3js-adapters";
+import { fromWeb3JsPublicKey, toWeb3JsPublicKey } from "@metaplex-foundation/umi-web3js-adapters";
 import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { PublicKey } from "@solana/web3.js";
 
 interface IWalletAdapter {
   publicKey: any; // from @solana/web3.js (Phantom, etc.)
@@ -42,6 +43,11 @@ async function deployCollectionViaUmi(
     throw new Error("This wallet does not support signTransaction.");
   }
 
+  const [updateAuthorityPDA] = await PublicKey.findProgramAddress(
+    [Buffer.from("collection_update_authority")],
+    new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s") // Metaplex Token Metadata Program ID
+  );
+
   // 1) Create a Umi instance, use the Core plugin and the wallet adapter
   const umi = createUmi(rpcEndpoint)
     .use(mplCore())
@@ -61,11 +67,19 @@ async function deployCollectionViaUmi(
         basisPoints: royaltyBasisPoints,
         creators: [
           {
-            address: umiPubKey(walletAdapter.publicKey.toBase58()),
-            percentage: 100, // entire share to the user's wallet
+            address: fromWeb3JsPublicKey(updateAuthorityPDA),
+            percentage: 100,
           },
         ],
         ruleSet: ruleSet("None"),
+      },
+      {
+        type: "UpdateDelegate",
+        authority: {
+          type: "Address",
+          address: fromWeb3JsPublicKey(updateAuthorityPDA),
+        },
+        additionalDelegates: [],
       },
     ],
   });
@@ -261,14 +275,14 @@ export default function CreatorOnboardingForm() {
   }
 
   return (
-    <div className="relative z-10 max-w-2xl mx-auto overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/90 via-[#251920]/80 to-[#1f151c]/70 p-8 shadow-xl backdrop-blur-sm border border-[#3a2a33]/20">
-      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#ff9ec6] opacity-5 blur-[80px] rounded-full"></div>
+    <div className="relative z-10 max-w-2xl mx-auto overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e211c]/90 via-[#0b0f0f]/80 to-[#0e1f1a]/70 p-8 shadow-xl backdrop-blur-sm border border-[#0a0f0f]/20">
+      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#00ce88] opacity-5 blur-[80px] rounded-full"></div>
       <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#9b5de5] opacity-5 blur-[80px] rounded-full"></div>
 
       <h2 className="text-2xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
         {existingProfile ? "Update Your Profile" : "Join as a Creator"}
       </h2>
-      <p className="text-[#ff9ec6]/70 mb-6">
+      <p className="text-[#00ce88]/70 mb-6">
         {existingProfile
           ? "Update your profile information below."
           : "Tell us about yourself and, if desired, deploy a new Metaplex collection."}
@@ -286,7 +300,7 @@ export default function CreatorOnboardingForm() {
           <input
             id="creatorName"
             type="text"
-            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+            className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name or creative handle"
@@ -303,7 +317,7 @@ export default function CreatorOnboardingForm() {
           </label>
           <textarea
             id="creatorDesc"
-            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+            className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Share a little about your work..."
@@ -318,7 +332,7 @@ export default function CreatorOnboardingForm() {
           </label>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {imageUrl ? (
-              <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-[#ff9ec6]/30 shadow-[0_0_15px_rgba(255,158,198,0.2)] group">
+              <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-[#00ce88]/30 shadow-[0_0_15px_rgba(255,158,198,0.2)] group">
                 <Image
                   src={imageUrl}
                   alt="Profile preview"
@@ -327,23 +341,12 @@ export default function CreatorOnboardingForm() {
                   className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
                   unoptimized
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1f151c]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0e1f1a]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#2f1f25] to-[#1f151c] text-[#ff9ec6] border-2 border-[#3a2a33]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-12 w-12 opacity-30"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
+              <div className="w-32 h-32 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#0e211c] to-[#0e1f1a] text-[#00ce88] border-2 border-[#0a0f0f]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
             )}
@@ -354,7 +357,7 @@ export default function CreatorOnboardingForm() {
                 id="imageUpload"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#ff9ec6]/20 file:text-[#ff9ec6] hover:file:bg-[#ff9ec6]/30 cursor-pointer"
+                className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#00ce88]/20 file:text-[#00ce88] hover:file:bg-[#00ce88]/30 cursor-pointer"
               />
               <p className="mt-2 text-xs text-gray-400">
                 Recommended: Square image, at least 500x500 pixels
@@ -370,7 +373,7 @@ export default function CreatorOnboardingForm() {
             id="gatingToggle"
             checked={gatingEnabled}
             onChange={(e) => setGatingEnabled(e.target.checked)}
-            className="w-4 h-4 text-[#ff9ec6] bg-[#2f1f25] border-[#3a2a33] rounded focus:ring-[#ff9ec6]/50"
+            className="w-4 h-4 text-[#00ce88] bg-[#0e211c] border-[#0a0f0f] rounded focus:ring-[#00ce88]/50"
           />
           <label
             htmlFor="gatingToggle"
@@ -382,10 +385,8 @@ export default function CreatorOnboardingForm() {
 
         {/* Deploy Collection Fields (Only if new) */}
         {!existingProfile && (
-          <div className="mt-8 pt-6 border-t border-[#3a2a33]/50">
-            <h3 className="text-lg font-semibold text-[#ff9ec6] mb-3">
-              Metaplex Collection Details
-            </h3>
+          <div className="mt-8 pt-6 border-t border-[#0a0f0f]/50">
+            <h3 className="text-lg font-semibold text-[#00ce88] mb-3">Metaplex Collection Details</h3>
             <p className="text-sm text-gray-400 mb-4">
               These fields are used to deploy a new collection NFT on Solana.
             </p>
@@ -401,7 +402,7 @@ export default function CreatorOnboardingForm() {
                 <input
                   id="collectionName"
                   type="text"
-                  className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+                  className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
                   value={collectionName}
                   onChange={(e) => setCollectionName(e.target.value)}
                   placeholder="e.g. My Exclusive Collection"
@@ -418,7 +419,7 @@ export default function CreatorOnboardingForm() {
                 <input
                   id="collectionUri"
                   type="text"
-                  className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200 opacity-75"
+                  className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200 opacity-75"
                   value={collectionUri}
                   readOnly
                   placeholder="Will be set after IPFS upload"
@@ -435,7 +436,7 @@ export default function CreatorOnboardingForm() {
                 <input
                   id="collectionRoyalties"
                   type="number"
-                  className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+                  className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
                   min={0}
                   max={10000}
                   value={royaltyBasisPoints}
@@ -453,37 +454,37 @@ export default function CreatorOnboardingForm() {
 
         <button
           type="submit"
-          className="relative overflow-hidden w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
+          className="relative overflow-hidden w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#00ce88] to-[#49bf58] text-[#0e1f1a] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
           disabled={loading}
         >
           <span className="relative z-10">
             {loading
               ? "Saving Profile..."
               : existingProfile
-              ? "Update Profile"
-              : "Save Profile & Deploy Collection"}
+                ? "Update Profile"
+                : "Save Profile & Deploy Collection"}
           </span>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
         </button>
       </form>
 
       {message && (
-        <div className="mt-6 px-4 py-3 rounded-lg bg-[#ff9ec6]/10 border border-[#ff9ec6]/20 text-[#ff9ec6]">
+        <div className="mt-6 px-4 py-3 rounded-lg bg-[#00ce88]/10 border border-[#00ce88]/20 text-[#00ce88]">
           {message}
         </div>
       )}
 
       {!publicKey && (
-        <div className="mt-6 px-4 py-3 rounded-lg bg-[#ff9ec6]/10 border border-[#ff9ec6]/20 text-[#ff9ec6] text-center">
+        <div className="mt-6 px-4 py-3 rounded-lg bg-[#00ce88]/10 border border-[#00ce88]/20 text-[#00ce88] text-center">
           Please connect your wallet to continue
         </div>
       )}
 
       {loading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#2a1b23] p-6 rounded-xl shadow-2xl border border-[#ff9ec6]/20 flex flex-col items-center">
-            <div className="w-12 h-12 border-4 border-[#ff9ec6]/20 border-t-[#ff9ec6] rounded-full animate-spin mb-4"></div>
-            <p className="text-[#ff9ec6]">Processing your request...</p>
+          <div className="bg-[#0e211c] p-6 rounded-xl shadow-2xl border border-[#00ce88]/20 flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-[#00ce88]/20 border-t-[#00ce88] rounded-full animate-spin mb-4"></div>
+            <p className="text-[#00ce88]">Processing your request...</p>
             <p className="text-xs text-gray-400 mt-2">This may take a moment</p>
           </div>
         </div>

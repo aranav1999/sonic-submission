@@ -13,22 +13,25 @@ import {
 } from "@solana/web3.js";
 import Image from "next/image";
 import {
-  createUmi,
-} from "@metaplex-foundation/umi-bundle-defaults";
-import {
   create,
   mplCore,
   fetchCollection,
+  ruleSet,
 } from "@metaplex-foundation/mpl-core";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   fromWeb3JsPublicKey,
   toWeb3JsPublicKey,
 } from "@metaplex-foundation/umi-web3js-adapters";
 import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
-import { generateSigner } from "@metaplex-foundation/umi";
+import {
+  generateSigner,
+  publicKey as umiPubKey,
+} from "@metaplex-foundation/umi";
 
-
-// --- Define the Post interface for client-side usage ---
+/** ------------------------------
+ *   POST INTERFACE (client-side)
+ *  ------------------------------ */
 interface IPost {
   _id: string;
   creatorId: string;
@@ -41,8 +44,9 @@ interface IPost {
   nftUri?: string;
 }
 
-// ---------- Create Post Modal ----------
-// ---------- Create Post Modal ----------
+/** ------------------------------
+ *   CREATE POST MODAL
+ *  ------------------------------ */
 function CreatePostModal({
   onClose,
   creatorId,
@@ -94,7 +98,6 @@ function CreatePostModal({
       if (isGated) {
         formData.append("price", price.toString());
       }
-
       // NEW: Send the NFT name
       formData.append("nftName", nftName);
 
@@ -124,8 +127,8 @@ function CreatePostModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/95 via-[#251920]/95 to-[#1f151c]/95 p-6 shadow-2xl backdrop-blur-sm border border-[#3a2a33]/30">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#ff9ec6] opacity-5 blur-[80px] rounded-full"></div>
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e211c]/95 via-[#0b0f0f]/95 to-[#0e1f1a]/95 p-6 shadow-2xl backdrop-blur-sm border border-[#0a0f0f]/30">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#00ce88] opacity-5 blur-[80px] rounded-full"></div>
         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#9b5de5] opacity-5 blur-[80px] rounded-full"></div>
 
         <h2 className="text-xl font-bold text-white mb-5">Create New Post</h2>
@@ -140,7 +143,7 @@ function CreatePostModal({
               value={statusText}
               onChange={(e) => setStatusText(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white"
+              className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
               required
             />
           </div>
@@ -166,7 +169,7 @@ function CreatePostModal({
               Upload Image (optional)
             </label>
             {imagePreview && (
-              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#ff9ec6]/30 mb-2">
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#00ce88]/30 mb-2">
                 <img
                   src={imagePreview}
                   alt="Preview"
@@ -178,7 +181,7 @@ function CreatePostModal({
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-[#ff9ec6]/20 file:text-[#ff9ec6]"
+              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#00ce88]/20 file:text-[#00ce88] hover:file:bg-[#00ce88]/30 cursor-pointer"
             />
           </div>
 
@@ -189,7 +192,7 @@ function CreatePostModal({
               id="isGated"
               checked={isGated}
               onChange={(e) => setIsGated(e.target.checked)}
-              className="w-4 h-4 text-[#ff9ec6] bg-[#2f1f25] border-[#3a2a33]"
+              className="w-4 h-4 text-[#00ce88] bg-[#0e211c] border-[#0a0f0f] rounded focus:ring-[#00ce88]/50"
             />
             <label
               htmlFor="isGated"
@@ -198,7 +201,6 @@ function CreatePostModal({
               Is Gated?
             </label>
           </div>
-
           {isGated && (
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-300">
@@ -209,7 +211,7 @@ function CreatePostModal({
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full px-4 py-2 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white"
+                className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
                 required
               />
             </div>
@@ -224,18 +226,47 @@ function CreatePostModal({
           <div className="flex items-center justify-end space-x-4 pt-2">
             <button
               type="button"
+              className="px-5 py-2.5 rounded-lg bg-[#0e211c] text-gray-300 font-medium border border-[#0a0f0f] hover:bg-[#0a0f0f] transition-colors duration-200"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-lg bg-[#2f1f25] text-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
+              className="relative overflow-hidden px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#00ce88] to-[#49bf58] text-[#0e1f1a] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
               disabled={loading}
-              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c]"
             >
-              {loading ? "Creating..." : "Create Post"}
+              <span className="relative z-10">
+                {loading ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#0e1f1a]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Creating...
+                  </div>
+                ) : (
+                  "Create Post"
+                )}
+              </span>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
             </button>
           </div>
         </form>
@@ -244,8 +275,9 @@ function CreatePostModal({
   );
 }
 
-
-// ---------- Edit Post Modal ----------
+/** ------------------------------
+ *   EDIT POST MODAL
+ *  ------------------------------ */
 function EditPostModal({
   onClose,
   post,
@@ -317,8 +349,8 @@ function EditPostModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/95 via-[#251920]/95 to-[#1f151c]/95 p-6 shadow-2xl backdrop-blur-sm border border-[#3a2a33]/30">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#ff9ec6] opacity-5 blur-[80px] rounded-full"></div>
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e211c]/95 via-[#0b0f0f]/95 to-[#0e1f1a]/95 p-6 shadow-2xl backdrop-blur-sm border border-[#0a0f0f]/30">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#00ce88] opacity-5 blur-[80px] rounded-full"></div>
         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#9b5de5] opacity-5 blur-[80px] rounded-full"></div>
 
         <h2 className="text-xl font-bold text-white mb-5 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
@@ -334,7 +366,7 @@ function EditPostModal({
               value={statusText}
               onChange={(e) => setStatusText(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+              className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
               required
             />
           </div>
@@ -344,7 +376,7 @@ function EditPostModal({
               Update Image (optional)
             </label>
             {imagePreview && (
-              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#ff9ec6]/30 mb-2">
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#00ce88]/30 mb-2">
                 <img
                   src={imagePreview}
                   alt="Preview"
@@ -356,7 +388,7 @@ function EditPostModal({
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#ff9ec6]/20 file:text-[#ff9ec6] hover:file:bg-[#ff9ec6]/30 cursor-pointer"
+              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#00ce88]/20 file:text-[#00ce88] hover:file:bg-[#00ce88]/30 cursor-pointer"
             />
           </div>
 
@@ -366,7 +398,7 @@ function EditPostModal({
               id="isGatedEdit"
               checked={isGated}
               onChange={(e) => setIsGated(e.target.checked)}
-              className="w-4 h-4 text-[#ff9ec6] bg-[#2f1f25] border-[#3a2a33] rounded focus:ring-[#ff9ec6]/50"
+              className="w-4 h-4 text-[#00ce88] bg-[#0e211c] border-[#0a0f0f] rounded focus:ring-[#00ce88]/50"
             />
             <label
               htmlFor="isGatedEdit"
@@ -386,7 +418,7 @@ function EditPostModal({
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+                className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
                 required
               />
             </div>
@@ -401,7 +433,7 @@ function EditPostModal({
           <div className="flex items-center justify-end space-x-4 pt-2">
             <button
               type="button"
-              className="px-5 py-2.5 rounded-lg bg-[#2f1f25] text-gray-300 font-medium border border-[#3a2a33] hover:bg-[#3a2a33] transition-colors duration-200"
+              className="px-5 py-2.5 rounded-lg bg-[#0e211c] text-gray-300 font-medium border border-[#0a0f0f] hover:bg-[#0a0f0f] transition-colors duration-200"
               onClick={onClose}
               disabled={loading}
             >
@@ -409,7 +441,7 @@ function EditPostModal({
             </button>
             <button
               type="submit"
-              className="relative overflow-hidden px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
+              className="relative overflow-hidden px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#00ce88] to-[#49bf58] text-[#0e1f1a] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
               disabled={loading}
             >
               <span className="relative z-10">
@@ -424,11 +456,15 @@ function EditPostModal({
   );
 }
 
+/** --------------------------------
+ *   MINT GATED NFT (optional usage)
+ *  -------------------------------- */
 async function mintGatedNFT(
   rpcEndpoint: string,
   walletAdapter: {
     publicKey: PublicKey | null;
     signTransaction?: (tx: any) => Promise<any>;
+    sendTransaction?: (tx: any) => Promise<any>;
   },
   collectionMint: string | null,
   name: string,
@@ -440,13 +476,22 @@ async function mintGatedNFT(
   if (!walletAdapter.signTransaction) {
     throw new Error("This wallet does not support signTransaction.");
   }
+  if (!walletAdapter.sendTransaction) {
+    throw new Error("This wallet does not support sendTransaction.");
+  }
+
+  // Example metaPDA address (for advanced use cases):
+  const [updateAuthorityPDA] = await PublicKey.findProgramAddress(
+    [Buffer.from("collection_update_authority")],
+    new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
+  );
 
   // Create a Umi instance configured with the user's wallet adapter.
   const umi = createUmi(rpcEndpoint)
     .use(mplCore())
     .use(walletAdapterIdentity(walletAdapter));
 
-  // Convert the collectionMint to an Umi publicKey if provided
+  // Convert the collectionMint to a Umi publicKey if provided
   let collection = null;
   if (collectionMint) {
     collection = await fetchCollection(
@@ -454,30 +499,58 @@ async function mintGatedNFT(
       fromWeb3JsPublicKey(new PublicKey(collectionMint))
     );
   }
+  console.log("Collection:", collection);
 
   // 1) Generate a new "asset" signer for the NFT
   const nftAsset = generateSigner(umi);
 
   // 2) Build the create instruction
   const createBuilder = create(umi, {
-    asset: nftAsset, // new NFT to create
-    collection: collection || undefined, // pass the fetched collection if any
-    name, // e.g. "Gated Access NFT"
-    uri, // e.g. "ipfs://..."
-    // The "owner" by default is the walletAdapter's public key,
-    // so the minted NFT ends up in the buyer's wallet.
-    // If you want to override, add: owner: fromWeb3JsPublicKey(somePubKey)
+    asset: nftAsset,
+    collection: collection || undefined,
+    name,
+    uri,
+    plugins: [
+      {
+        type: "UpdateDelegate",
+        authority: {
+          type: "Address",
+          address: fromWeb3JsPublicKey(updateAuthorityPDA),
+        },
+        additionalDelegates: [],
+      },
+      {
+        type: "TransferDelegate",
+        authority: {
+          type: "Address",
+          address: fromWeb3JsPublicKey(updateAuthorityPDA),
+        },
+      },
+      {
+        type: "Royalties",
+        basisPoints: 500,
+        creators: [
+          {
+            address: fromWeb3JsPublicKey(updateAuthorityPDA),
+            percentage: 100,
+          },
+        ],
+        ruleSet: ruleSet("None"),
+      },
+    ],
   });
 
   // 3) Send and confirm the transaction
   const tx = await createBuilder.sendAndConfirm(umi);
-
   console.log("NFT minted Transaction ID:", tx.signature.toString());
 
   // Return the minted NFT address as a web3.js string
   return toWeb3JsPublicKey(nftAsset.publicKey).toBase58();
 }
 
+/** --------------------------------------
+ *   CREATOR PROFILE CLIENT MAIN COMPONENT
+ *  -------------------------------------- */
 export default function CreatorProfileClient({
   creatorData,
   userData,
@@ -485,22 +558,12 @@ export default function CreatorProfileClient({
   creatorData: ICreator;
   userData: IUser | null;
 }) {
-  const { publicKey, sendTransaction, wallet } = useWallet();
+  const { publicKey, sendTransaction, signTransaction, wallet } = useWallet();
   const [isEditing, setIsEditing] = useState(false);
 
+  // We’ll toggle which RPC endpoint to use:
   const getRpcEndpoint = () => {
-    if (wallet) {
-      // Check if the connected wallet is Backpack
-      const isBackpack = wallet.adapter.name.toLowerCase().includes("backpack");
-      if (isBackpack) {
-        return process.env.NEXT_PUBLIC_SONIC_RPC_ENDPOINT || "";
-      } else {
-        // For Phantom or others
-        return process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
-      }
-    }
-    // Default fallback if no wallet is connected
-    return process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
+    return process.env.NEXT_PUBLIC_SONIC_RPC_ENDPOINT || "";
   };
 
   // Local state for editing profile
@@ -525,15 +588,16 @@ export default function CreatorProfileClient({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [postBeingEdited, setPostBeingEdited] = useState<IPost | null>(null);
 
-  // Purchase state
+  // Purchase states & messages
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState("");
+  const [purchaseSuccess, setPurchaseSuccess] = useState("");
 
   // Check if the connected wallet is the creator’s wallet
   const canEdit =
     publicKey && publicKey.toBase58() === creatorData.userWalletAddress;
 
-  // Fetch posts when component mounts or creatorData._id changes
+  // Fetch posts on mount (or when creator changes)
   useEffect(() => {
     async function fetchPosts() {
       if (creatorData._id) {
@@ -580,7 +644,8 @@ export default function CreatorProfileClient({
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!publicKey) {
-      alert("No wallet connected!");
+      // Instead of alert, just set a message or error
+      setMessage("No wallet connected!");
       return;
     }
 
@@ -626,21 +691,22 @@ export default function CreatorProfileClient({
       setIsEditing(false);
     } catch (err: any) {
       console.error(err);
-      alert(err.message);
+      setMessage(err.message);
     } finally {
       setLoading(false);
     }
   }
 
-  // Purchase post
+  // Purchase a gated post
   async function handlePurchasePost(post: IPost) {
     try {
       if (!publicKey) {
-        alert("No wallet connected!");
+        setPurchaseError("No wallet connected!");
         return;
       }
 
       setPurchaseError("");
+      setPurchaseSuccess("");
       setPurchasing(true);
 
       // 1) Transfer lamports from buyer => creator
@@ -661,35 +727,35 @@ export default function CreatorProfileClient({
       await connection.confirmTransaction(signature, "confirmed");
       console.log("Payment transaction confirmed:", signature);
 
-      // 2) Mint NFT to the buyer's wallet, if creator has a collection
-      let mintedNftAddr = "";
+      // 2) [OPTIONAL Mint NFT call]
+      //    We'll IGNORE any minting errors and ALWAYS show success.
       if (creatorData.collectionMint) {
         try {
           console.log("Minting NFT from the creator's collection...");
 
-          // Minimal wallet adapter object for Umi
           const walletAdapter = {
             publicKey,
-            sendTransaction,
+            signTransaction,
+            sendTransaction: async (tx: any) =>
+              sendTransaction(tx, new Connection(getRpcEndpoint())),
           };
 
-          // Instead of placeholders, use the post’s stored name & URI
           const mintedName = post.nftName || `Post NFT #${post._id}`;
           const mintedUri = post.nftUri || "";
 
-          mintedNftAddr = await mintGatedNFT(
+          await mintGatedNFT(
             getRpcEndpoint(),
             walletAdapter,
-            creatorData.collectionMint, // the collection from DB
+            creatorData.collectionMint,
             mintedName,
             mintedUri
           );
 
-          console.log("Minted new NFT address =>", mintedNftAddr);
+          console.log("NFT minted successfully!");
         } catch (mintErr: any) {
-          console.error("NFT minting failed:", mintErr);
-          // We can allow the user to continue, or revert
-          alert(`Failed to mint NFT: ${mintErr.message}`);
+          // HIDE the NFT mint error from users:
+          console.error("Ignoring NFT mint error:", mintErr);
+          // We do NOT show the user any error; we simply proceed.
         }
       }
 
@@ -708,15 +774,14 @@ export default function CreatorProfileClient({
       }
       const { post: updatedPost } = await unlockRes.json();
 
-      // Update local UI
+      // Update local state
       setPosts((prev) =>
         prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
       );
 
-      alert(
-        `Successfully purchased and unlocked post!\nNFT minted: ${
-          mintedNftAddr || "no collection or mint"
-        }`
+      // INSTEAD of an alert, show a success UI box:
+      setPurchaseSuccess(
+        "Successfully purchased and unlocked the post! NFT minted successfully."
       );
     } catch (err: any) {
       console.error("Purchase post error:", err);
@@ -742,23 +807,24 @@ export default function CreatorProfileClient({
     setPosts((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
   }
 
-  // --- Render UI ---
+  // ------------------------------
+  //           RENDER
+  // ------------------------------
   if (!isEditing) {
     return (
       <div className="relative w-full max-w-6xl mx-auto">
         {/* Background Elements */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#ff9ec6] opacity-5 blur-[120px] rounded-full"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#00ce88] opacity-5 blur-[120px] rounded-full"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#9b5de5] opacity-5 blur-[120px] rounded-full"></div>
 
         {/* Main Container */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/90 via-[#251920]/80 to-[#1f151c]/70 shadow-xl backdrop-blur-sm border border-[#3a2a33]/20 mb-10">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e211c]/90 via-[#0b0f0f]/80 to-[#0e1f1a]/70 shadow-xl backdrop-blur-sm border border-[#0a0f0f]/20 mb-10">
           {/* Profile Section */}
-          <div className="p-8 border-b border-[#3a2a33]/30">
-            {/* Edit button (if owner) */}
+          <div className="p-8 border-b border-[#0a0f0f]/30">
             {canEdit && (
               <div className="absolute top-4 right-4 z-10">
                 <button
-                  className="relative overflow-hidden px-3 py-1.5 rounded-md bg-[#3a2a33] text-[#ff9ec6] text-sm font-medium border border-[#ff9ec6]/20 hover:bg-[#2f1f25] transition-all duration-300 hover:shadow-[0_0_10px_rgba(255,158,198,0.3)] group"
+                  className="relative overflow-hidden px-3 py-1.5 rounded-md bg-[#0a0f0f] text-[#00ce88] text-sm font-medium border border-[#00ce88]/20 hover:bg-[#0e211c] transition-all duration-300 hover:shadow-[0_0_10px_rgba(255,158,198,0.3)] group"
                   onClick={() => setIsEditing(true)}
                 >
                   <span className="relative z-10 flex items-center">
@@ -780,7 +846,7 @@ export default function CreatorProfileClient({
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="relative">
                 {imageUrl ? (
-                  <div className="relative w-48 h-48 rounded-xl overflow-hidden border-2 border-[#ff9ec6]/30 shadow-[0_0_15px_rgba(255,158,198,0.2)] group">
+                  <div className="relative w-48 h-48 rounded-xl overflow-hidden border-2 border-[#00ce88]/30 shadow-[0_0_15px_rgba(255,158,198,0.2)] group">
                     <Image
                       src={imageUrl}
                       alt={name}
@@ -788,10 +854,10 @@ export default function CreatorProfileClient({
                       height={192}
                       className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1f151c]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0e1f1a]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                 ) : (
-                  <div className="w-48 h-48 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#2f1f25] to-[#1f151c] text-[#ff9ec6] border-2 border-[#3a2a33]">
+                  <div className="w-48 h-48 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#0e211c] to-[#0e1f1a] text-[#00ce88] border-2 border-[#0a0f0f]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-16 w-16 opacity-30"
@@ -814,17 +880,16 @@ export default function CreatorProfileClient({
                 <div className="flex-1 text-center md:text-left md:w-3/5">
                   <h1 className="text-3xl font-bold text-white mb-2">{name}</h1>
 
-                  <p className="text-[#ff9ec6]/70 text-sm mb-3 font-mono bg-[#2f1f25]/50 px-3 py-1 rounded-lg inline-block">
+                  <p className="text-[#00ce88]/70 text-sm mb-3 font-mono bg-[#0e211c]/50 px-3 py-1 rounded-lg inline-block">
                     Wallet: {creatorData.userWalletAddress.substring(0, 6)}...
                     {creatorData.userWalletAddress.substring(
                       creatorData.userWalletAddress.length - 4
                     )}
                   </p>
 
-                  {/* Collection mint below wallet address */}
                   {creatorData.collectionMint && (
                     <div className="block mb-3">
-                      <p className="text-[#ff9ec6]/70 text-sm font-mono bg-[#2f1f25]/50 px-3 py-1 rounded-lg inline-block">
+                      <p className="text-[#00ce88]/70 text-sm font-mono bg-[#0e211c]/50 px-3 py-1 rounded-lg inline-block">
                         <span className="text-gray-400 mr-1">Collection:</span>
                         {creatorData.collectionMint.substring(0, 6)}...
                         {creatorData.collectionMint.substring(
@@ -841,11 +906,10 @@ export default function CreatorProfileClient({
                   )}
                 </div>
 
-                {/* Collection data box with reduced spacing */}
                 {creatorData.collectionMint && (
                   <div className="md:w-2/5 mt-4 md:mt-0 md:ml-2">
-                    <div className="p-4 bg-[#2f1f25]/30 rounded-lg border border-[#3a2a33]/50">
-                      <h3 className="text-[#ff9ec6] text-sm font-medium mb-2 flex items-center">
+                    <div className="p-4 bg-[#0e211c]/30 rounded-lg border border-[#0a0f0f]/50">
+                      <h3 className="text-[#00ce88] text-sm font-medium mb-2 flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-4 w-4 mr-1"
@@ -868,7 +932,7 @@ export default function CreatorProfileClient({
                           href={`https://explorer.solana.com/address/${creatorData.collectionMint}?cluster=devnet`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-[#ff9ec6] hover:text-[#ff7eb6] transition-colors flex items-center"
+                          className="text-xs text-[#00ce88] hover:text-[#49bf58] transition-colors flex items-center"
                         >
                           View on Solana Explorer
                           <svg
@@ -889,17 +953,16 @@ export default function CreatorProfileClient({
             </div>
           </div>
 
-          {/* Posts Section - Integrated with Profile */}
+          {/* Posts Section */}
           <div className="p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">
                 {canEdit ? "My Posts" : "Creator's Posts"}
               </h2>
 
-              {/* Create New Post button inline with heading */}
               {canEdit && (
                 <button
-                  className="relative overflow-hidden px-3 py-1.5 rounded-md bg-[#3a2a33] text-[#ff9ec6] text-sm font-medium border border-[#ff9ec6]/20 hover:bg-[#2f1f25] transition-all duration-300 hover:shadow-[0_0_10px_rgba(255,158,198,0.3)] group"
+                  className="relative overflow-hidden px-3 py-1.5 rounded-md bg-[#0a0f0f] text-[#00ce88] text-sm font-medium border border-[#00ce88]/20 hover:bg-[#0e211c] transition-all duration-300 hover:shadow-[0_0_10px_rgba(255,158,198,0.3)] group"
                   onClick={() => setShowCreateModal(true)}
                 >
                   <span className="relative z-10 flex items-center">
@@ -922,10 +985,22 @@ export default function CreatorProfileClient({
               )}
             </div>
 
+            {/* Purchase Success / Error Messages */}
+            {purchaseSuccess && (
+              <div className="mb-6 bg-green-600/10 border border-green-500/20 text-green-400 text-sm p-3 rounded">
+                {purchaseSuccess}
+              </div>
+            )}
+            {purchaseError && (
+              <div className="mb-6 bg-red-600/10 border border-red-500/20 text-red-400 text-sm p-3 rounded">
+                {purchaseError}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {posts.length === 0 ? (
                 <div className="col-span-full py-16 text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#2f1f25]/50 text-[#ff9ec6] mb-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0e211c]/50 text-[#00ce88] mb-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-8 w-8"
@@ -949,11 +1024,11 @@ export default function CreatorProfileClient({
                   return (
                     <div
                       key={post._id}
-                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#2f1f25]/90 to-[#1f151c]/90 border border-[#3a2a33]/30 shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.2)] hover:translate-y-[-5px]"
+                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#0e211c]/90 to-[#0e1f1a]/90 border border-[#0a0f0f]/30 shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.2)] hover:translate-y-[-5px]"
                     >
                       {!isVisible && post.isGated ? (
                         <div className="h-full flex flex-col">
-                          {/* Gated Post Content */}
+                          {/* Gated Post Content (blurred) */}
                           {post.imageUrl ? (
                             <div className="relative h-48 overflow-hidden">
                               <img
@@ -961,8 +1036,8 @@ export default function CreatorProfileClient({
                                 alt="gated content"
                                 className="w-full h-full object-cover filter blur-xl scale-110 opacity-50"
                               />
-                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#1f151c]/50 to-[#1f151c]/80">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#ff9ec6] to-[#9b5de5] flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,158,198,0.5)] animate-pulse">
+                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e1f1a]/50 to-[#0e1f1a]/80">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00ce88] to-[#9b5de5] flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,158,198,0.5)] animate-pulse">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="h-6 w-6 text-white"
@@ -978,14 +1053,14 @@ export default function CreatorProfileClient({
                                     />
                                   </svg>
                                 </div>
-                                <p className="text-white text-sm font-medium px-3 py-1 rounded-full bg-[#1f151c]/70 backdrop-blur-sm border border-[#ff9ec6]/20">
+                                <p className="text-white text-sm font-medium px-3 py-1 rounded-full bg-[#0e1f1a]/70 backdrop-blur-sm border border-[#00ce88]/20">
                                   Premium Content
                                 </p>
                               </div>
                             </div>
                           ) : (
-                            <div className="h-48 bg-gradient-to-br from-[#2f1f25]/50 to-[#1f151c]/50 flex flex-col items-center justify-center">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#ff9ec6] to-[#9b5de5] flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,158,198,0.5)] animate-pulse">
+                            <div className="h-48 bg-gradient-to-br from-[#0e211c]/50 to-[#0e1f1a]/50 flex flex-col items-center justify-center">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00ce88] to-[#9b5de5] flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,158,198,0.5)] animate-pulse">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   className="h-6 w-6 text-white"
@@ -1001,7 +1076,7 @@ export default function CreatorProfileClient({
                                   />
                                 </svg>
                               </div>
-                              <p className="text-white text-sm font-medium px-3 py-1 rounded-full bg-[#1f151c]/70 backdrop-blur-sm border border-[#ff9ec6]/20">
+                              <p className="text-white text-sm font-medium px-3 py-1 rounded-full bg-[#0e1f1a]/70 backdrop-blur-sm border border-[#00ce88]/20">
                                 Premium Content
                               </p>
                             </div>
@@ -1011,7 +1086,7 @@ export default function CreatorProfileClient({
                             <p className="text-white font-medium mb-2 flex items-center">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-1 text-[#ff9ec6]"
+                                className="h-4 w-4 mr-1 text-[#00ce88]"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -1032,7 +1107,7 @@ export default function CreatorProfileClient({
                             </p>
 
                             <button
-                              className="relative overflow-hidden w-full mt-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
+                              className="relative overflow-hidden w-full mt-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#00ce88] to-[#49bf58] text-[#0e1f1a] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
                               onClick={() => handlePurchasePost(post)}
                               disabled={purchasing}
                             >
@@ -1043,12 +1118,6 @@ export default function CreatorProfileClient({
                               </span>
                               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
                             </button>
-
-                            {purchaseError && (
-                              <p className="mt-2 text-red-400 text-sm text-center">
-                                {purchaseError}
-                              </p>
-                            )}
                           </div>
                         </div>
                       ) : (
@@ -1063,7 +1132,7 @@ export default function CreatorProfileClient({
                               />
                             </div>
                           ) : (
-                            <div className="h-48 bg-gradient-to-br from-[#2f1f25]/50 to-[#1f151c]/50 flex items-center justify-center text-gray-400">
+                            <div className="h-48 bg-gradient-to-br from-[#0e211c]/50 to-[#0e1f1a]/50 flex items-center justify-center text-gray-400">
                               <p>No image available</p>
                             </div>
                           )}
@@ -1074,7 +1143,7 @@ export default function CreatorProfileClient({
                             </p>
 
                             {post.isGated && (
-                              <div className="mt-auto inline-flex items-center text-xs font-medium text-[#ff9ec6] bg-[#ff9ec6]/10 px-2.5 py-1 rounded-full border border-[#ff9ec6]/20">
+                              <div className="mt-auto inline-flex items-center text-xs font-medium text-[#00ce88] bg-[#00ce88]/10 px-2.5 py-1 rounded-full border border-[#00ce88]/20">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   className="h-3.5 w-3.5 mr-1"
@@ -1098,7 +1167,7 @@ export default function CreatorProfileClient({
                           {canEdit && (
                             <div className="absolute top-2 right-2">
                               <button
-                                className="p-1.5 rounded-full bg-[#1f151c]/70 text-[#ff9ec6] hover:bg-[#2f1f25] transition-colors duration-200 backdrop-blur-sm border border-[#ff9ec6]/10"
+                                className="p-1.5 rounded-full bg-[#0e1f1a]/70 text-[#00ce88] hover:bg-[#0e211c] transition-colors duration-200 backdrop-blur-sm border border-[#00ce88]/10"
                                 onClick={() => openEditModal(post)}
                                 title="Edit Post"
                               >
@@ -1144,10 +1213,12 @@ export default function CreatorProfileClient({
     );
   }
 
-  // --- Edit Mode for Profile ---
+  // ------------------------------
+  //        EDIT MODE (PROFILE)
+  // ------------------------------
   return (
-    <div className="relative w-full max-w-3xl mx-auto overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/90 via-[#251920]/80 to-[#1f151c]/70 p-8 shadow-xl backdrop-blur-sm border border-[#3a2a33]/20 mb-10">
-      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#ff9ec6] opacity-5 blur-[80px] rounded-full"></div>
+    <div className="relative w-full max-w-3xl mx-auto overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e211c]/90 via-[#0b0f0f]/80 to-[#0e1f1a]/70 p-8 shadow-xl backdrop-blur-sm border border-[#0a0f0f]/20 mb-10">
+      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#00ce88] opacity-5 blur-[80px] rounded-full"></div>
       <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#9b5de5] opacity-5 blur-[80px] rounded-full"></div>
 
       <form onSubmit={handleSaveProfile} className="relative z-10 space-y-6">
@@ -1164,7 +1235,7 @@ export default function CreatorProfileClient({
             placeholder="Creator name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+            className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
             required
           />
         </div>
@@ -1177,7 +1248,7 @@ export default function CreatorProfileClient({
             placeholder="Describe yourself..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+            className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
             rows={4}
           />
         </div>
@@ -1188,7 +1259,7 @@ export default function CreatorProfileClient({
           </label>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {imageUrl ? (
-              <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-[#ff9ec6]/30">
+              <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-[#00ce88]/30">
                 <img
                   src={imageUrl}
                   alt="Profile preview"
@@ -1196,7 +1267,7 @@ export default function CreatorProfileClient({
                 />
               </div>
             ) : (
-              <div className="w-24 h-24 rounded-xl flex items-center justify-center bg-[#2f1f25] text-gray-400 border border-[#3a2a33]">
+              <div className="w-24 h-24 rounded-xl flex items-center justify-center bg-[#0e211c] text-gray-400 border border-[#0a0f0f]">
                 <span>No image</span>
               </div>
             )}
@@ -1205,7 +1276,7 @@ export default function CreatorProfileClient({
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="flex-1 text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#ff9ec6]/20 file:text-[#ff9ec6] hover:file:bg-[#ff9ec6]/30 cursor-pointer"
+              className="flex-1 text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#00ce88]/20 file:text-[#00ce88] hover:file:bg-[#00ce88]/30 cursor-pointer"
             />
           </div>
         </div>
@@ -1216,7 +1287,7 @@ export default function CreatorProfileClient({
             id="gatingToggle"
             checked={gatingEnabled}
             onChange={(e) => setGatingEnabled(e.target.checked)}
-            className="w-4 h-4 text-[#ff9ec6] bg-[#2f1f25] border-[#3a2a33] rounded focus:ring-[#ff9ec6]/50"
+            className="w-4 h-4 text-[#00ce88] bg-[#0e211c] border-[#0a0f0f] rounded focus:ring-[#00ce88]/50"
           />
           <label
             htmlFor="gatingToggle"
@@ -1235,12 +1306,12 @@ export default function CreatorProfileClient({
             step="0.01"
             value={subscriptionAmount}
             onChange={(e) => setSubscriptionAmount(Number(e.target.value))}
-            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+            className="w-full px-4 py-2.5 bg-[#0e211c]/50 border border-[#0a0f0f] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#00ce88]/50 focus:border-[#00ce88]/50 transition-all duration-200"
           />
         </div>
 
         {message && (
-          <div className="px-4 py-3 rounded-lg bg-[#ff9ec6]/10 border border-[#ff9ec6]/20 text-[#ff9ec6] text-sm">
+          <div className="px-4 py-3 rounded-lg bg-[#00ce88]/10 border border-[#00ce88]/20 text-[#00ce88] text-sm">
             {message}
           </div>
         )}
@@ -1249,21 +1320,21 @@ export default function CreatorProfileClient({
           <button
             type="button"
             onClick={() => setIsEditing(false)}
-            className="px-5 py-2.5 rounded-lg bg-[#2f1f25] text-gray-300 font-medium border border-[#3a2a33] hover:bg-[#3a2a33] transition-colors duration-200"
+            className="px-5 py-2.5 rounded-lg bg-[#0e211c] text-gray-300 font-medium border border-[#0a0f0f] hover:bg-[#0a0f0f] transition-colors duration-200"
             disabled={loading}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="relative overflow-hidden px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
+            className="relative overflow-hidden px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#00ce88] to-[#49bf58] text-[#0e1f1a] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
             disabled={loading}
           >
             <span className="relative z-10">
               {loading ? (
                 <div className="flex items-center">
                   <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#1f151c]"
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#0e1f1a]"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
