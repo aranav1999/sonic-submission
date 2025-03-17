@@ -12,6 +12,8 @@ export interface IPost extends Document {
   isGated: boolean; // If true, requires purchase or special permission
   price?: number; // Required if isGated = true
   accessibleBy: string[]; // Wallet addresses that can view gated content
+  nftName?: string;
+  nftUri?: string;
 }
 
 const PostSchema = new Schema<IPost>(
@@ -22,6 +24,8 @@ const PostSchema = new Schema<IPost>(
     isGated: { type: Boolean, default: false },
     price: { type: Number, default: 0 },
     accessibleBy: [{ type: String }], // an array of wallet addresses
+    nftName: { type: String, default: "" },
+    nftUri: { type: String, default: "" },
   },
   { timestamps: true }
 );

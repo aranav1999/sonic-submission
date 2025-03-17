@@ -1133,6 +1133,13 @@
     "@metaplex-foundation/umi-serializers-encodings" "1.1.1"
     "@metaplex-foundation/umi-serializers-numbers" "1.1.1"
 
+"@metaplex-foundation/umi-signer-wallet-adapters@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@metaplex-foundation/umi-signer-wallet-adapters/-/umi-signer-wallet-adapters-1.1.1.tgz#29a8c8385e6ce2a18c574827a3c29284ab8349d4"
+  integrity sha512-agBNDhegRRNHAku2PE6MaY4XNE4DpV/VHsFin+7SNZCyxmqKYfuCX28mDR8m081OmY1TFOOpj1OXXM1fwkrWpg==
+  dependencies:
+    "@metaplex-foundation/umi-web3js-adapters" "1.1.1"
+
 "@metaplex-foundation/umi-transaction-factory-web3js@1.1.1":
   version "1.1.1"
   resolved "https://registry.npmjs.org/@metaplex-foundation/umi-transaction-factory-web3js/-/umi-transaction-factory-web3js-1.1.1.tgz"

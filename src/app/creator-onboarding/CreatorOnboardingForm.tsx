@@ -4,68 +4,92 @@ import React, { useState, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Image from "next/image";
 
+// Umi + Metaplex
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   generateSigner,
-  keypairIdentity,
   publicKey as umiPubKey,
 } from "@metaplex-foundation/umi";
 import {
-  createCollection,
   mplCore,
+  createCollection,
   ruleSet,
 } from "@metaplex-foundation/mpl-core";
-import {
-  fromWeb3JsKeypair,
-  toWeb3JsPublicKey,
-} from "@metaplex-foundation/umi-web3js-adapters";
-import { Keypair, Transaction } from "@solana/web3.js";
-import bs58 from "bs58";
-import { PublicKey } from "@metaplex-foundation/js";
+import { fromWeb3JsPublicKey, toWeb3JsPublicKey } from "@metaplex-foundation/umi-web3js-adapters";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { PublicKey } from "@solana/web3.js";
 
+interface IWalletAdapter {
+  publicKey: any; // from @solana/web3.js (Phantom, etc.)
+  signTransaction?: (tx: any) => Promise<any>;
+  signAllTransactions?: (txs: any[]) => Promise<any[]>;
+  signMessage?: (message: Uint8Array) => Promise<Uint8Array>;
+}
+
+/**
+ * Deploy a new Metaplex Collection via Umi using the connected wallet.
+ */
 async function deployCollectionViaUmi(
   rpcEndpoint: string,
-  walletPubkey: string,
-  signTransaction: (tx: Transaction) => Promise<Transaction>,
+  walletAdapter: IWalletAdapter,
   collectionName: string,
   collectionUri: string,
   royaltyBasisPoints: number
-): Promise<PublicKey> {
-  // 1) Create a Umi instance with the given endpoint
-  const umi = createUmi(rpcEndpoint).use(mplCore());
-  console.log("////////////// Umi:", umi);
+): Promise<string> {
+  if (!walletAdapter.publicKey) {
+    throw new Error("No wallet connected or publicKey is null.");
+  }
+  if (!walletAdapter.signTransaction) {
+    throw new Error("This wallet does not support signTransaction.");
+  }
 
-  // 2) Generate ephemeral keypair for the new collection
-  const collectionSigner = generateSigner(umi);
-  const walletKeypair = Keypair.fromSecretKey(
-    bs58.decode(process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY!)
+  const [updateAuthorityPDA] = await PublicKey.findProgramAddress(
+    [Buffer.from("collection_update_authority")],
+    new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s") // Metaplex Token Metadata Program ID
   );
-  umi.use(keypairIdentity(fromWeb3JsKeypair(walletKeypair)));
-  console.log("////////////// Collection Signer:", collectionSigner);
-  // 3) Build the createCollection instructions
-  const tx = await createCollection(umi, {
+
+  // 1) Create a Umi instance, use the Core plugin and the wallet adapter
+  const umi = createUmi(rpcEndpoint)
+    .use(mplCore())
+    .use(walletAdapterIdentity(walletAdapter));
+
+  // 2) Generate an ephemeral signer to represent the new Collection NFT
+  const collectionSigner = generateSigner(umi);
+
+  // 3) Create the collection
+  const txBuilder = await createCollection(umi, {
     collection: collectionSigner,
     name: collectionName,
     uri: collectionUri,
     plugins: [
       {
         type: "Royalties",
-        // Pass royaltyBasisPoints directly
         basisPoints: royaltyBasisPoints,
         creators: [
           {
-            address: umiPubKey(walletPubkey),
-            percentage: 100, // entire share to user's wallet
+            address: fromWeb3JsPublicKey(updateAuthorityPDA),
+            percentage: 100,
           },
         ],
         ruleSet: ruleSet("None"),
       },
+      {
+        type: "UpdateDelegate",
+        authority: {
+          type: "Address",
+          address: fromWeb3JsPublicKey(updateAuthorityPDA),
+        },
+        additionalDelegates: [],
+      },
     ],
-  }).sendAndConfirm(umi);
-  console.log("////////////// Collection TX:", tx);
+  });
 
-  // Return the ephemeral collection address
-  return toWeb3JsPublicKey(collectionSigner.publicKey);
+  // 4) Send and confirm transaction
+  const tx = await txBuilder.sendAndConfirm(umi);
+
+  console.log("Created new collection with transaction:", tx.signature);
+  // Return the ephemeral collection address as a Web3.js string
+  return toWeb3JsPublicKey(collectionSigner.publicKey).toBase58();
 }
 
 export default function CreatorOnboardingForm() {
@@ -81,11 +105,14 @@ export default function CreatorOnboardingForm() {
   const [existingProfile, setExistingProfile] = useState(false);
 
   /**
-   * Collection-related fields
+   * Collection-related fields for deploying on chain
    */
   const [collectionName, setCollectionName] = useState("");
   const [collectionUri, setCollectionUri] = useState("");
   const [royaltyBasisPoints, setRoyaltyBasisPoints] = useState(500); // e.g. 500 => 5%
+
+  // RPC endpoint: can be your devnet or custom Sonic/Helius RPC
+  const rpcEndpoint = "https://api.testnet.sonic.game";
 
   // Fetch existing creator profile if wallet is connected
   useEffect(() => {
@@ -128,7 +155,7 @@ export default function CreatorOnboardingForm() {
   }
 
   /**
-   * Helper: Upload metadata and image to IPFS via our server API.
+   * Helper: Upload metadata + image to IPFS via our server API.
    */
   async function uploadMetadataToIpfs(): Promise<string> {
     if (!imageFile) {
@@ -151,6 +178,9 @@ export default function CreatorOnboardingForm() {
     return metadataUri;
   }
 
+  /**
+   * Handle form submission: upsert Creator profile and optionally deploy new collection
+   */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!publicKey || !connected) {
@@ -163,32 +193,43 @@ export default function CreatorOnboardingForm() {
     try {
       let collectionMint = "";
 
-      // (1) If imageFile exists, upload to IPFS for new collection metadata
+      // (1) If user provided a new imageFile, upload to IPFS => newCollectionUri
       if (imageFile) {
         const newCollectionUri = await uploadMetadataToIpfs();
         console.log("Uploaded metadata to IPFS. URI:", newCollectionUri);
         setCollectionUri(newCollectionUri);
       }
-      // (2) Deploy the Metaplex collection (only if creating a new profile)
+
+      // (2) Deploy the Metaplex collection if user is a brand new profile
+      //     (existingProfile == false => deploy new collection)
       if (!existingProfile) {
-        const rpcEndpoint = "https://api.testnet.sonic.game";
-        console.log("//////////////////Deploying collection via Umi...");
-        const mintedCollection = await deployCollectionViaUmi(
+        // Build a wallet adapter object for the Umi plugin
+        const walletAdapter: IWalletAdapter = {
+          publicKey,
+          signTransaction,
+        };
+
+        // We must have signTransaction to proceed
+        if (!signTransaction) {
+          throw new Error(
+            "Wallet does not support signTransaction or is not ready."
+          );
+        }
+
+        console.log("Deploying new collection via Umi...");
+        const mintedCollectionAddress = await deployCollectionViaUmi(
           rpcEndpoint,
-          publicKey.toBase58(),
-          async (tx) => {
-            // signTransaction from the Phantom wallet
-            return await signTransaction!(tx);
-          },
+          walletAdapter,
           collectionName,
           collectionUri,
           royaltyBasisPoints
         );
-        collectionMint = mintedCollection.toBase58();
+        collectionMint = mintedCollectionAddress;
         console.log("New collectionMint =>", collectionMint);
       }
 
-      // (3) Build a multipart/form-data payload to upsert the creator profile
+      // (3) Upsert the creator profile
+      //     Build a multipart/form-data payload
       const formData = new FormData();
       formData.append("userWalletAddress", publicKey.toBase58());
       formData.append("name", name);
@@ -197,9 +238,11 @@ export default function CreatorOnboardingForm() {
       if (imageFile) {
         formData.append("image", imageFile);
       }
+      // If we deployed a new collection, attach it
       if (collectionMint) {
         formData.append("collectionMint", collectionMint);
       }
+      // If we have a new IPFS URI, attach it (optional usage on server)
       if (collectionUri) {
         formData.append("collectionUri", collectionUri);
       }
@@ -208,11 +251,9 @@ export default function CreatorOnboardingForm() {
         method: "POST",
         body: formData,
       });
-
       if (!res.ok) {
         const { error } = await res.json();
-        alert(`Error onboarding/updating creator: ${error}`);
-        return;
+        throw new Error(`Creator update error: ${error}`);
       }
 
       const { creator } = await res.json();
@@ -250,7 +291,10 @@ export default function CreatorOnboardingForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
         <div className="space-y-2">
-          <label htmlFor="creatorName" className="block text-sm font-medium text-gray-300">
+          <label
+            htmlFor="creatorName"
+            className="block text-sm font-medium text-gray-300"
+          >
             Name
           </label>
           <input
@@ -265,7 +309,10 @@ export default function CreatorOnboardingForm() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="creatorDesc" className="block text-sm font-medium text-gray-300">
+          <label
+            htmlFor="creatorDesc"
+            className="block text-sm font-medium text-gray-300"
+          >
             Description
           </label>
           <textarea
@@ -328,7 +375,10 @@ export default function CreatorOnboardingForm() {
             onChange={(e) => setGatingEnabled(e.target.checked)}
             className="w-4 h-4 text-[#00ce88] bg-[#0e211c] border-[#0a0f0f] rounded focus:ring-[#00ce88]/50"
           />
-          <label htmlFor="gatingToggle" className="ml-2 text-sm font-medium text-gray-300">
+          <label
+            htmlFor="gatingToggle"
+            className="ml-2 text-sm font-medium text-gray-300"
+          >
             Enable token-gated content
           </label>
         </div>
@@ -343,7 +393,10 @@ export default function CreatorOnboardingForm() {
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <label htmlFor="collectionName" className="block text-sm font-medium text-gray-300">
+                <label
+                  htmlFor="collectionName"
+                  className="block text-sm font-medium text-gray-300"
+                >
                   Collection Name
                 </label>
                 <input
@@ -357,7 +410,10 @@ export default function CreatorOnboardingForm() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="collectionUri" className="block text-sm font-medium text-gray-300">
+                <label
+                  htmlFor="collectionUri"
+                  className="block text-sm font-medium text-gray-300"
+                >
                   Metadata URI (auto-uploaded to IPFS)
                 </label>
                 <input
@@ -371,7 +427,10 @@ export default function CreatorOnboardingForm() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="collectionRoyalties" className="block text-sm font-medium text-gray-300">
+                <label
+                  htmlFor="collectionRoyalties"
+                  className="block text-sm font-medium text-gray-300"
+                >
                   Royalty (basis points)
                 </label>
                 <input
@@ -381,7 +440,9 @@ export default function CreatorOnboardingForm() {
                   min={0}
                   max={10000}
                   value={royaltyBasisPoints}
-                  onChange={(e) => setRoyaltyBasisPoints(Number(e.target.value))}
+                  onChange={(e) =>
+                    setRoyaltyBasisPoints(Number(e.target.value))
+                  }
                 />
                 <p className="mt-1 text-xs text-gray-400">
                   500 = 5%, 1000 = 10%, etc.

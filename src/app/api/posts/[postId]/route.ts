@@ -8,6 +8,8 @@ import { updatePost } from "@/modules/post/postService";
  * - statusText (string) -> up to 50 words
  * - isGated ("true"/"false")
  * - price (string -> number) only if isGated
+ * - nftName (string) optional
+ * - nftUri (string) optional (if the metadata URI is updated)
  * - image (File) optional
  */
 export async function PUT(
@@ -31,6 +33,9 @@ export async function PUT(
     const rawStatusText = formData.get("statusText")?.toString() || "";
     const isGatedVal = formData.get("isGated")?.toString() || "false";
     const priceVal = formData.get("price")?.toString() || "";
+    // New fields for NFT metadata
+    const nftName = formData.get("nftName")?.toString() || "";
+    const nftUri = formData.get("nftUri")?.toString() || "";
     const file = formData.get("image") as File | null;
 
     // Basic max 50 words check
@@ -66,6 +71,8 @@ export async function PUT(
       imageUrl,
       isGated,
       price,
+      nftName,
+      nftUri,
     });
 
     if (!updatedPost) {
