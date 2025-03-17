@@ -1,6 +1,7 @@
 import MarqueeCards from "@/components/ProfileCards";
+import Image from "next/image";
 import Link from "next/link";
-
+import media from  "../../public/images/index"
 export default function Home() {
   return (
     <>
@@ -29,8 +30,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="w-[40%] h-[400px] border border-slate-600 rounded-lg p-2">
-          <div className="w-full h-full "></div>
+        <div className="w-[40%] h-[400px] relative  rounded-lg p-2">
+          <div className="w-full h-full ">
+            <Image src={media?.homeBg} alt=".." objectFit="contain " fill />
+          </div>
         </div>
       </div>
 
