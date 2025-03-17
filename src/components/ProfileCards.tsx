@@ -1,52 +1,88 @@
+import { dbConnect } from "@/lib/db";
+import { getAllCreators } from "@/modules/creator/creatorService";
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 
-const cards = [
-  { name: "Card 1", description: "This is the first card." },
-  { name: "Card 2", description: "This is the second card." },
-  { name: "Card 3", description: "This is the third card." },
-  { name: "Card 4", description: "This is the fourth card." },
-  { name: "Card 5", description: "This is the fifth card." },
-];
 
-const MarqueeCards = () => {
+const MarqueeCards = async () => {
+
+  let creators = [];
+
+  try {
+    await dbConnect();
+    creators = await getAllCreators();
+  } catch (error) {
+    console.error("Error fetching creators:", error);
+  }
+
+  if (creators.length === 0) {
+    return (
+      <div className="w-full text-center py-6 text-gray-500">
+        No creators found. Be the first to join our community!
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full overflow-hidden py-4">
       <div className="flex gap-6 w-max animate-marquee">
-        {[...cards, ...cards].map((card, i) => (
-          <div key={i} className="nft  bg-white shadow-md rounded-lg">
-            <div className="main">
-              <img
-                className="tokenImage w-full h-[220px] object-cover rounded-md"
-                src="https://images.unsplash.com/photo-1621075160523-b936ad96132a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
-                alt="NFT"
+        {[...creators, ...creators].map((creator, i) => (
+          <Link
+            key={`${creator._id?.toString()}-${i}`}
+            href={`/creator/${creator._id?.toString()}`}
+            className="relative h-[300px] w-[200px] rounded-2xl overflow-hidden"
+          >
+            {creator.imageUrl ? (
+              <Image
+                src={creator.imageUrl}
+                alt={creator.name}
+                width={200}
+                height={300}
+                className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
+                unoptimized
               />
-              <h2 className="mt-2 text-[14px] font-semibold">{card.name}</h2>
-              <p className="description text-gray-600">{card.description}</p>
-              <div className="tokenInfo flex justify-between mt-2">
-                <div className="price flex items-center gap-1">
-                  <ins>◘</ins>
-                  <p>0.031 ETH</p>
-                </div>
-                <div className="duration flex items-center gap-1">
-                  <ins>◷</ins>
-                  <p>11 days left</p>
-                </div>
+            ) : (
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-200 rounded-2xl">
+                No Image
               </div>
-              <hr className="my-1" />
-              <div className="creator flex items-center gap-2">
-                <div className="wrapper">
-                  <img
-                    className="w-8 h-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1620121692029-d088224ddc74?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1932&q=80"
-                    alt="Creator"
-                  />
+            )}
+            
+            {creator.gatingEnabled ? (
+              <span className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-white bg-red-500 rounded-tr-lg">
+                Token Gated Content
+              </span>
+            ) : (
+                <span className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-white bg-green-500 rounded-tr-lg">
+                Public Content
+              </span>
+            )}
+            
+            <div className="absolute bottom-0 h-[60px] w-full bg-white rounded-2xl flex flex-col p-2 space-y-1">
+              <div className="flex flex-row items-center space-x-2">
+                <div className="rounded-full w-10 h-10 overflow-hidden">
+                  {creator.imageUrl ? (
+                    <Image
+                      src={creator.imageUrl}
+                      alt={creator.name}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover rounded-full"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-300 rounded-full">?</div>
+                  )}
                 </div>
-                <p>
-                  <ins>Creation of</ins> solana
-                </p>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm text-black ">{creator.name || "Unknown Creator"}</span>
+                  {creator.description && (
+                    <span className="text-xs text-gray-600 truncate">{creator.description}</span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
