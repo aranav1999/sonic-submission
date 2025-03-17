@@ -12,6 +12,7 @@ import {
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import styles from "./CreatorProfile.module.css";
+import Image from "next/image";
 
 // --- Define the Post interface for client-side usage ---
 interface IPost {
@@ -341,14 +342,14 @@ export default function CreatorProfileClient({
       // Check if the connected wallet is Backpack
       const isBackpack = wallet.adapter.name.toLowerCase().includes("backpack");
       if (isBackpack) {
-        return "https://api.testnet.sonic.game";
+        return process.env.NEXT_PUBLIC_SONIC_RPC_ENDPOINT || "";
       } else {
         // For Phantom or others
-        return "https://api.devnet.solana.com";
+        return process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
       }
     }
     // Default fallback if no wallet is connected
-    return "https://api.testnet.solana.com";
+    return process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
   };
 
   // Local state for editing profile
@@ -554,31 +555,38 @@ export default function CreatorProfileClient({
     return (
       <>
         {/* Profile Display */}
-        <div className={styles.profileSection}>
-          <div className={styles.profileImageContainer}>
+        <div className={`${styles.profileSection}  `}>
+          <div>
             {imageUrl ? (
-              <img src={imageUrl} alt={name} className={styles.profileImage} />
+              <Image
+                src={imageUrl}
+                alt={name}
+                className={styles.profileImage}
+                width={150}
+                height={150}
+              />
             ) : (
               <div className={styles.noProfileImage}>No profile image</div>
             )}
           </div>
           <div className={styles.profileInfo}>
             <h1 className={styles.creatorName}>{name}</h1>
-            {description && (
-              <p className={styles.creatorDescription}>{description}</p>
-            )}
             <p className={styles.walletAddress}>
               Wallet: {creatorData.userWalletAddress.substring(0, 6)}...
               {creatorData.userWalletAddress.substring(
                 creatorData.userWalletAddress.length - 4
               )}
             </p>
+
+            {description && (
+              <p className={styles.creatorDescription}>{description}</p>
+            )}
           </div>
-          <div className={styles.subscribeContainer}>
+          {/* <div className={styles.subscribeContainer}>
             <button className={styles.subscribeButton}>
               Subscribe for {userData?.subscriptionAmount || 0} SOL
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Edit Button (if owner) */}
@@ -613,7 +621,7 @@ export default function CreatorProfileClient({
               posts.map((post) => {
                 const isVisible = canViewPost(post);
                 return (
-                  <div key={post._id} className={styles.postCard}>
+                  <div key={post._id} className={`${styles.postCard}`}>
                     {!isVisible && post.isGated ? (
                       <div className={styles.gatedPostContainer}>
                         {post.imageUrl ? (

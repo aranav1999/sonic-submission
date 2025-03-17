@@ -1,3 +1,5 @@
+/** FILE: src/modules/creator/creatorModel.ts */
+
 import { Schema, model, models, Document } from "mongoose";
 
 export interface ICreator extends Document {
@@ -5,8 +7,12 @@ export interface ICreator extends Document {
   name: string;
   description: string;
   imageUrl: string;
-  // Possibly more fields
-  gatingEnabled: boolean; // whether certain content is token-gated
+  gatingEnabled: boolean;
+  /**
+   * NEW FIELD: holds the mint address of the Collection on Solana.
+   * If empty, we haven't created a Collection for this creator.
+   */
+  collectionMint?: string;
 }
 
 const CreatorSchema = new Schema<ICreator>(
@@ -16,6 +22,10 @@ const CreatorSchema = new Schema<ICreator>(
     description: { type: String },
     imageUrl: { type: String },
     gatingEnabled: { type: Boolean, default: false },
+    /**
+     * NEW FIELD in the schema
+     */
+    collectionMint: { type: String, default: "" },
   },
   { timestamps: true }
 );
