@@ -1,6 +1,10 @@
+import MarqueeCards from "@/components/ProfileCards";
+
 export default function Home() {
   return (
-    <div style={{ padding: 20 }}>
+  <>
+  
+  <div >
       <h1>Welcome to NFT OnlyFans MVP!</h1>
       <p>
         This is a home page. Use the <strong>Connect Wallet</strong> button in
@@ -13,5 +17,11 @@ export default function Home() {
         or buy special NFTs.
       </p>
     </div>
+    <MarqueeCards/> 
+    </>
+
+
+
+
   );
 }
