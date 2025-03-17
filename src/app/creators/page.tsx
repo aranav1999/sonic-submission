@@ -28,7 +28,7 @@ export default async function CreatorsPage() {
       </div>
 
       <div className="relative z-10">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white">
             Discover <span className="text-[#ff9ec6]">Creators</span>
           </h1>
@@ -36,6 +36,25 @@ export default async function CreatorsPage() {
             Explore talented creators sharing their unique digital art and
             collectibles
           </p>
+        </div>
+        
+        {/* New Search Bar */}
+        <div className="max-w-2xl mx-auto mb-10 relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#ff9ec6]/20 to-[#9b5de5]/20 rounded-lg blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative flex items-center bg-[#2f1f25]/80 backdrop-blur-sm rounded-lg border border-[#ff9ec6]/30 overflow-hidden">
+            <input 
+              type="text" 
+              placeholder="Search creators by name..." 
+              className="w-full bg-transparent py-3 px-4 text-white placeholder-[#ff9ec6]/50 focus:outline-none"
+            />
+            <button className="flex items-center justify-center h-full px-4 text-[#ff9ec6] hover:text-white transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+            <div className="absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-[#ff9ec6] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          </div>
+          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#ff9ec6]/30 to-transparent"></div>
         </div>
 
         {creators.length === 0 ? (
@@ -85,7 +104,7 @@ export default async function CreatorsPage() {
                   </span>
                 )}
                 
-                <div className="absolute bottom-0 h-[70px] w-full bg-gradient-to-t from-[#2f1f25] to-[#2f1f25]/90 backdrop-blur-sm rounded-b-2xl flex flex-col p-3 space-y-1 transition-all duration-300 group-hover:h-[80px] z-20">
+                <div className="absolute -bottom-2 h-[70px] w-full bg-gradient-to-t from-[#2f1f25] to-[#2f1f25]/90 backdrop-blur-sm rounded-b-2xl flex flex-col p-3 space-y-1 transition-all duration-300 group-hover:h-[80px] z-20">
                   <div className="flex flex-row items-center space-x-3">
                     <div className="rounded-full w-10 h-10 overflow-hidden border-2 border-[#ff9ec6] group-hover:border-[3px] transition-all duration-300 shadow-[0_0_10px_rgba(255,158,198,0.3)]">
                       {creator.imageUrl ? (
