@@ -10,6 +10,7 @@ import { upsertCreator } from "@/modules/creator/creatorService";
  * - description (string, optional)
  * - gatingEnabled ("true" or "false")
  * - image (File, optional)
+ * - collectionMint (string, optional; new field storing the mint address)
  */
 export async function POST(req: NextRequest) {
   try {
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
     const description = formData.get("description")?.toString() || "";
     const gatingValue = formData.get("gatingEnabled")?.toString() || "false";
     const gatingEnabled = gatingValue === "true";
+    const collectionMint = formData.get("collectionMint")?.toString() || "";
 
     let imageUrl = "";
     const imageFile = formData.get("image") as File | null;
@@ -48,6 +50,7 @@ export async function POST(req: NextRequest) {
       description,
       imageUrl, // may be "" if no file
       gatingEnabled,
+      collectionMint, // new field
     });
 
     return NextResponse.json({ creator }, { status: 200 });

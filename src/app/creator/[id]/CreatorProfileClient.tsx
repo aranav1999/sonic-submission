@@ -341,14 +341,14 @@ export default function CreatorProfileClient({
       // Check if the connected wallet is Backpack
       const isBackpack = wallet.adapter.name.toLowerCase().includes("backpack");
       if (isBackpack) {
-        return "https://api.testnet.sonic.game";
+        return process.env.NEXT_PUBLIC_SONIC_RPC_ENDPOINT || "";
       } else {
         // For Phantom or others
-        return "https://api.devnet.solana.com";
+        return process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
       }
     }
     // Default fallback if no wallet is connected
-    return "https://api.testnet.solana.com";
+    return process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
   };
 
   // Local state for editing profile

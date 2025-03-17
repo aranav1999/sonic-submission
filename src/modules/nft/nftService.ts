@@ -1,8 +1,5 @@
 import NFT, { INFT } from "./nftModel";
 
-// Removed the old `mintNFT` mock function to avoid confusion.
-// We mint NFTs directly on the client side with Metaplex UMI now.
-
 export async function getNFTById(nftId: string): Promise<INFT | null> {
   return NFT.findById(nftId);
 }
