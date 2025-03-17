@@ -1,3 +1,5 @@
+/** FILE: src/modules/creator/creatorService.ts */
+
 import Creator, { ICreator } from "./creatorModel";
 
 /**
@@ -10,26 +12,41 @@ export async function upsertCreator(data: {
   description?: string;
   imageUrl?: string;
   gatingEnabled?: boolean;
+  collectionMint?: string;
 }): Promise<ICreator> {
-  const { userWalletAddress, name, description, imageUrl, gatingEnabled } =
-    data;
+  const {
+    userWalletAddress,
+    name,
+    description,
+    imageUrl,
+    gatingEnabled,
+    collectionMint,
+  } = data;
 
   let creator = await Creator.findOne({ userWalletAddress });
   if (!creator) {
+    // Create new creator
     creator = await Creator.create({
       userWalletAddress,
       name,
       description,
       imageUrl,
       gatingEnabled: gatingEnabled || false,
+      collectionMint: collectionMint || "",
     });
   } else {
-    // Update existing: preserve existing imageUrl if no new one is provided
+    // Update existing
     creator.name = name;
     creator.description = description || "";
-    creator.imageUrl = imageUrl !== "" ? imageUrl : creator.imageUrl;
+    if (imageUrl !== "") {
+      creator.imageUrl = imageUrl;
+    }
     if (gatingEnabled !== undefined) {
       creator.gatingEnabled = gatingEnabled;
+    }
+    // NEW: update the collectionMint if provided
+    if (collectionMint) {
+      creator.collectionMint = collectionMint;
     }
     await creator.save();
   }
@@ -41,7 +58,7 @@ export async function upsertCreator(data: {
  * Return all creators.
  */
 export async function getAllCreators(): Promise<ICreator[]> {
-  return Creator.find({}).sort({ createdAt: -1 }); // Sort by newest first
+  return Creator.find({}).sort({ createdAt: -1 });
 }
 
 /**
