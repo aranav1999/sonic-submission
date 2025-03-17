@@ -33,10 +33,11 @@ const Header = () => {
         {/* Logo */}
         <Link
           href="/"
-          className="text-xl font-semibold tracking-tight hover:text-purple-400 transition duration-300"
+          className="text-2xl font-semibold tracking-tight hover:text-purple-400 transition duration-300"
         >
-          FanPit.fun
+          FanPit<span className="inline-block w-2 h-2 rounded-full bg-[#ff9ec6] mx-0.5 align-middle"></span>fun
         </Link>
+
 
         {/* Navigation & Wallet */}
         <div className="flex items-center space-x-6">
@@ -59,7 +60,7 @@ const Header = () => {
 
           {/* Wallet Button */}
           <div className="relative group">
-            <WalletMultiButton style={{ backgroundColor: '#ff9ec6', color: 'black' }}/>
+            <WalletMultiButton style={{ backgroundColor: '#ff9ec6', color: 'black' }} />
             {publicKey && (
               <div className="absolute right-0 top-full w-max opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800 text-purple-400 text-xs px-2 py-1 border border-purple-700 rounded shadow-md z-10">
                 {publicKey.toBase58()}
