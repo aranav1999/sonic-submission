@@ -26,6 +26,7 @@ interface IPost {
 }
 
 // ---------- Create Post Modal ----------
+// ---------- Create Post Modal ----------
 function CreatePostModal({
   onClose,
   creatorId,
@@ -96,67 +97,85 @@ function CreatePostModal({
   }
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContainer}>
-        <h2 className={styles.modalTitle}>Create New Post</h2>
-        <form onSubmit={handleSubmit} className={styles.modalForm}>
-          <label className={styles.formLabel}>
-            Post Text (max 50 words)
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/95 via-[#251920]/95 to-[#1f151c]/95 p-6 shadow-2xl backdrop-blur-sm border border-[#3a2a33]/30">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#ff9ec6] opacity-5 blur-[80px] rounded-full"></div>
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#9b5de5] opacity-5 blur-[80px] rounded-full"></div>
+        
+        <h2 className="text-xl font-bold text-white mb-5 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
+          Create New Post
+        </h2>
+        
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-5">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-300">
+              Post Text (max 50 words)
+            </label>
             <textarea
               value={statusText}
               onChange={(e) => setStatusText(e.target.value)}
               rows={3}
-              className={styles.formTextarea}
+              className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
               required
             />
-          </label>
+          </div>
 
-          <label className={styles.formLabel}>
-            Upload Image (optional)
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-300">
+              Upload Image (optional)
+            </label>
             {imagePreview && (
-              <div className={styles.imagePreview}>
-                <img src={imagePreview} alt="Preview" />
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#ff9ec6]/30 mb-2">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
               </div>
             )}
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className={styles.formFileInput}
+              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#ff9ec6]/20 file:text-[#ff9ec6] hover:file:bg-[#ff9ec6]/30 cursor-pointer"
             />
-          </label>
+          </div>
 
-          <div className={styles.checkboxGroup}>
-            <label className={styles.checkboxContainer}>
-              <input
-                type="checkbox"
-                checked={isGated}
-                onChange={(e) => setIsGated(e.target.checked)}
-              />
-              <span>Is Gated?</span>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isGated"
+              checked={isGated}
+              onChange={(e) => setIsGated(e.target.checked)}
+              className="w-4 h-4 text-[#ff9ec6] bg-[#2f1f25] border-[#3a2a33] rounded focus:ring-[#ff9ec6]/50"
+            />
+            <label htmlFor="isGated" className="ml-2 text-sm font-medium text-gray-300">
+              Is Gated?
             </label>
           </div>
 
           {isGated && (
-            <label className={styles.formLabel}>
-              Price (SOL)
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-300">
+                Price (SOL)
+              </label>
               <input
                 type="number"
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                className={styles.formInput}
+                className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
                 required
               />
-            </label>
+            </div>
           )}
 
-          {error && <div className={styles.errorMessage}>{error}</div>}
+          {error && (
+            <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
 
-          <div className={styles.modalActions}>
+          <div className="flex items-center justify-end space-x-4 pt-2">
             <button
               type="button"
-              className={styles.cancelButton}
+              className="px-5 py-2.5 rounded-lg bg-[#2f1f25] text-gray-300 font-medium border border-[#3a2a33] hover:bg-[#3a2a33] transition-colors duration-200"
               onClick={onClose}
               disabled={loading}
             >
@@ -164,10 +183,23 @@ function CreatePostModal({
             </button>
             <button
               type="submit"
-              className={styles.saveButton}
+              className="relative overflow-hidden px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
               disabled={loading}
             >
-              {loading ? "Creating..." : "Create Post"}
+              <span className="relative z-10">
+                {loading ? (
+                  <div className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#1f151c]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating...
+                  </div>
+                ) : (
+                  "Create Post"
+                )}
+              </span>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
             </button>
           </div>
         </form>
@@ -175,6 +207,7 @@ function CreatePostModal({
     </div>
   );
 }
+
 
 // ---------- Edit Post Modal ----------
 // ---------- Edit Post Modal ----------
