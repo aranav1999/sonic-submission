@@ -29,7 +29,7 @@ const Header = () => {
 
   return (
     <header className="w-full bg-gradient-to-r from-black via-[#26171d] to-black text-white border-b border-[#331f26]  h-[55px]">
-      <div className="max-w-5xl mx-auto px-6 pt-[12px] flex items-center  justify-between">
+      <div className="max-w-7xl mx-auto px-6 pt-[12px] flex items-center  justify-between">
         {/* Logo */}
         <Link
           href="/"
