@@ -33,6 +33,35 @@ export async function createPost(data: {
 }
 
 /**
+ * Update an existing post by postId.
+ * If imageUrl is provided, it overwrites the old imageUrl.
+ * If imageUrl is undefined, it means no new upload – keep existing.
+ */
+export async function updatePost(
+  postId: string,
+  data: {
+    statusText: string;
+    imageUrl?: string; // if present, replace; if undefined, leave existing
+    isGated: boolean;
+    price: number;
+  }
+): Promise<IPost | null> {
+  const post = await Post.findById(postId);
+  if (!post) return null;
+
+  // Basic update logic
+  post.statusText = data.statusText;
+  if (typeof data.imageUrl === "string") {
+    post.imageUrl = data.imageUrl;
+  }
+  post.isGated = data.isGated;
+  post.price = data.isGated ? data.price : 0;
+
+  await post.save();
+  return post;
+}
+
+/**
  * Get all posts by a given creatorId.
  * Does not filter out gated or not; returns them all.
  * Client can decide which to show based on user.

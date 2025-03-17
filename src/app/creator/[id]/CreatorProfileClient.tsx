@@ -1,4 +1,3 @@
-// File: src/app/creator/[id]/CreatorProfileClient.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -25,7 +24,7 @@ interface IPost {
   accessibleBy: string[];
 }
 
-// --- Modal component for creating a new post ---
+// ---------- Create Post Modal ----------
 function CreatePostModal({
   onClose,
   creatorId,
@@ -176,7 +175,157 @@ function CreatePostModal({
   );
 }
 
-// --- Main CreatorProfileClient component ---
+// ---------- Edit Post Modal ----------
+function EditPostModal({
+  onClose,
+  post,
+  onPostUpdated,
+}: {
+  onClose: () => void;
+  post: IPost;
+  onPostUpdated: (updated: IPost) => void;
+}) {
+  const [statusText, setStatusText] = useState(post.statusText);
+  const [isGated, setIsGated] = useState(post.isGated);
+  const [price, setPrice] = useState<number>(post.price || 0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(post.imageUrl || "");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+
+      // Local preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImagePreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Build multipart form data
+      const formData = new FormData();
+      formData.append("statusText", statusText);
+      formData.append("isGated", isGated ? "true" : "false");
+      if (isGated) {
+        formData.append("price", price.toString());
+      }
+      // Only send image if changed
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      const res = await fetch(`/api/posts/${post._id}`, {
+        method: "PUT",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update post");
+      }
+      const { post: updatedPost } = await res.json();
+      onPostUpdated(updatedPost);
+      onClose();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContainer}>
+        <h2 className={styles.modalTitle}>Edit Post</h2>
+        <form onSubmit={handleSubmit} className={styles.modalForm}>
+          <label className={styles.formLabel}>
+            Post Text (max 50 words)
+            <textarea
+              value={statusText}
+              onChange={(e) => setStatusText(e.target.value)}
+              rows={3}
+              className={styles.formTextarea}
+              required
+            />
+          </label>
+
+          <label className={styles.formLabel}>
+            Update Image (optional)
+            {imagePreview && (
+              <div className={styles.imagePreview}>
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className={styles.formFileInput}
+            />
+          </label>
+
+          <div className={styles.checkboxGroup}>
+            <label className={styles.checkboxContainer}>
+              <input
+                type="checkbox"
+                checked={isGated}
+                onChange={(e) => setIsGated(e.target.checked)}
+              />
+              <span>Is Gated?</span>
+            </label>
+          </div>
+
+          {isGated && (
+            <label className={styles.formLabel}>
+              Price (SOL)
+              <input
+                type="number"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className={styles.formInput}
+                required
+              />
+            </label>
+          )}
+
+          {error && <div className={styles.errorMessage}>{error}</div>}
+
+          <div className={styles.modalActions}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={styles.saveButton}
+              disabled={loading}
+            >
+              {loading ? "Updating..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function CreatorProfileClient({
   creatorData,
   userData,
@@ -187,29 +336,24 @@ export default function CreatorProfileClient({
   const { publicKey, sendTransaction, wallet } = useWallet();
   const [isEditing, setIsEditing] = useState(false);
 
-
   const getRpcEndpoint = () => {
-  if (wallet) {
-    // Check if the connected wallet is Backpack
-    const isBackpack = wallet.adapter.name.toLowerCase().includes('backpack');
-    
-    if (isBackpack) {
-      return "https://sonic.helius-rpc.com/?cluster=testnet.v1";
-    } else {
-      // For Phantom or any other wallet
-      return "https://api.devnet.solana.com";
+    if (wallet) {
+      // Check if the connected wallet is Backpack
+      const isBackpack = wallet.adapter.name.toLowerCase().includes("backpack");
+      if (isBackpack) {
+        return "https://api.testnet.sonic.game";
+      } else {
+        // For Phantom or others
+        return "https://api.devnet.solana.com";
+      }
     }
-  }
-  
-  // Default fallback if no wallet is connected
-  return "https://api.testnet.solana.com";
-};
+    // Default fallback if no wallet is connected
+    return "https://api.testnet.solana.com";
+  };
 
   // Local state for editing profile
   const [name, setName] = useState(creatorData.name || "");
-  const [description, setDescription] = useState(
-    creatorData.description || ""
-  );
+  const [description, setDescription] = useState(creatorData.description || "");
   const [imageUrl, setImageUrl] = useState(creatorData.imageUrl || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [gatingEnabled, setGatingEnabled] = useState(
@@ -221,9 +365,15 @@ export default function CreatorProfileClient({
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // State for posts and modal
+  // State for posts
   const [posts, setPosts] = useState<IPost[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // State for editing a single post
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [postBeingEdited, setPostBeingEdited] = useState<IPost | null>(null);
+
+  // Purchase state
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState("");
 
@@ -274,7 +424,7 @@ export default function CreatorProfileClient({
     }
   }
 
-  // Save profile changes (existing functionality)
+  // Save profile changes
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!publicKey) {
@@ -330,7 +480,7 @@ export default function CreatorProfileClient({
     }
   }
 
-  // --- New Feature: Execute SOL trade and unlock gated post ---
+  // Purchase post
   async function handlePurchasePost(post: IPost) {
     try {
       if (!publicKey) {
@@ -340,15 +490,10 @@ export default function CreatorProfileClient({
       setPurchaseError("");
       setPurchasing(true);
 
-      // --- 1) SOL Transfer ---
-      // Use devnet endpoint
       const connection = new Connection(getRpcEndpoint(), "confirmed");
-
-
       const creatorWallet = new PublicKey(creatorData.userWalletAddress);
       const lamportsToSend = (post.price || 0) * LAMPORTS_PER_SOL;
 
-      // Create transaction for SOL transfer
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -357,13 +502,10 @@ export default function CreatorProfileClient({
         })
       );
 
-      // Send the transaction
       const signature = await sendTransaction(transaction, connection);
-      console.log("Transaction signature:", signature);
       await connection.confirmTransaction(signature, "confirmed");
-      console.log("SOL transfer confirmed on devnet.");
 
-      // --- 2) Unlock the Post ---
+      // Unlock the Post
       const unlockRes = await fetch("/api/posts/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -378,7 +520,6 @@ export default function CreatorProfileClient({
       }
       const { post: updatedPost } = await unlockRes.json();
 
-      // Update local posts state so that the unlocked post is visible
       setPosts((prev) =>
         prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
       );
@@ -390,6 +531,22 @@ export default function CreatorProfileClient({
     } finally {
       setPurchasing(false);
     }
+  }
+
+  // Called after creating a post in modal
+  function handlePostCreated(newPost: IPost) {
+    setPosts((prev) => [newPost, ...prev]);
+  }
+
+  // Called when user clicks "Edit" on a post
+  function openEditModal(post: IPost) {
+    setPostBeingEdited(post);
+    setEditModalOpen(true);
+  }
+
+  // Called after the post is successfully updated
+  function handlePostUpdated(updated: IPost) {
+    setPosts((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
   }
 
   // --- Render UI ---
@@ -411,8 +568,7 @@ export default function CreatorProfileClient({
               <p className={styles.creatorDescription}>{description}</p>
             )}
             <p className={styles.walletAddress}>
-              Wallet:{" "}
-              {creatorData.userWalletAddress.substring(0, 6)}...
+              Wallet: {creatorData.userWalletAddress.substring(0, 6)}...
               {creatorData.userWalletAddress.substring(
                 creatorData.userWalletAddress.length - 4
               )}
@@ -573,6 +729,18 @@ export default function CreatorProfileClient({
                         )}
                       </div>
                     )}
+
+                    {/* Edit Button for the Owner */}
+                    {canEdit && (
+                      <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
+                        <button
+                          className={styles.editProfileButton}
+                          onClick={() => openEditModal(post)}
+                        >
+                          Edit Post
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -584,9 +752,18 @@ export default function CreatorProfileClient({
           <CreatePostModal
             creatorId={creatorData._id as string}
             onClose={() => setShowCreateModal(false)}
-            onPostCreated={(newPost) =>
-              setPosts((prev) => [newPost, ...prev])
-            }
+            onPostCreated={handlePostCreated}
+          />
+        )}
+
+        {editModalOpen && postBeingEdited && (
+          <EditPostModal
+            post={postBeingEdited}
+            onClose={() => setEditModalOpen(false)}
+            onPostUpdated={(updated: IPost) => {
+              handlePostUpdated(updated);
+              setEditModalOpen(false);
+            }}
           />
         )}
       </>
