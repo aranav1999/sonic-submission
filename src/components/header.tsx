@@ -28,8 +28,8 @@ const Header = () => {
   const creatorLinkHref = isCreator ? `/creator/${creatorId}` : "/creator-onboarding";
 
   return (
-    <header className="w-full bg-gradient-to-r from-black via-[#051d38] to-black text-white border-b border-blue-800">
-      <div className="max-w-5xl mx-auto px-6 py-2 flex items-center justify-between">
+    <header className="w-full bg-gradient-to-r from-black via-[#051d38] to-black text-white border-b border-blue-800  h-[55px]">
+      <div className="max-w-5xl mx-auto px-6 pt-[12px] flex items-center  justify-between">
         {/* Logo */}
         <Link
           href="/"
@@ -44,7 +44,7 @@ const Header = () => {
             {[
               { href: "/", label: "Home" },
               { href: "/creators", label: "All Creators" },
-              { href: "/profile", label: "Profile" }, // Added Profile link
+              // { href: "/profile", label: "Profile" }, // Added Profile link
             ].map((link) => (
               <Link key={link.href} href={link.href} className="relative group transition duration-300">
                 <span className="hover:text-purple-400">{link.label}</span>

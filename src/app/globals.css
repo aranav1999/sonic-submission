@@ -163,5 +163,12 @@ a:hover {
 
 .wallet-adapter-button-trigger{
 
-  height: 30px;
+  height: 30px !important;
+  font-size: 14px !important;
+}
+
+
+.wallet-adapter-button-start-icon img {
+  width: 20px !important;
+  height: 20px  !important;
 }

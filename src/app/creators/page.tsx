@@ -11,7 +11,7 @@ export default async function CreatorsPage() {
   const creators = await getAllCreators();
 
   return (
-    <div className="w-full py-6 px-4">
+    <div className="w-full py-6 px-4 ">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white">Discover Creators</h1>
         <p className="text-gray-600 mt-2">
