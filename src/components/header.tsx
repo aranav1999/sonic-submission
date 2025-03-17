@@ -33,7 +33,7 @@ const Header = () => {
         {/* Logo */}
         <Link
           href="/"
-          className="text-3xl font-semibold tracking-tight hover:text-purple-400 transition duration-300"
+          className="text-3xl font-semibold tracking-tight hover:text-[#00ce88] transition duration-300"
         >
           FanPit<span className="inline-block w-2 h-2 rounded-full bg-[#00ce88] mx-0.5 align-middle"></span>fun
         </Link>
@@ -48,13 +48,13 @@ const Header = () => {
               // { href: "/profile", label: "Profile" }, // Added Profile link
             ].map((link) => (
               <Link key={link.href} href={link.href} className="relative group transition duration-300">
-                <span className="hover:text-purple-400">{link.label}</span>
-                <span className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-purple-400 transition-transform group-hover:scale-x-100"></span>
+                <span className="hover:text-#00ce88">{link.label}</span>
+                <span className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-[#00ce88] transition-transform group-hover:scale-x-100"></span>
               </Link>
             ))}
             <Link href={creatorLinkHref} className="relative group transition duration-300">
-              <span className="hover:text-purple-400">{creatorLinkLabel}</span>
-              <span className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-purple-400 transition-transform group-hover:scale-x-100"></span>
+              <span className="hover:text-[#00ce88]">{creatorLinkLabel}</span>
+              <span className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-[#00ce88] transition-transform group-hover:scale-x-100"></span>
             </Link>
           </nav>
 
@@ -62,7 +62,7 @@ const Header = () => {
           <div className="relative group">
             <WalletMultiButton style={{ backgroundColor: '#00ce88', color: 'black' }} />
             {publicKey && (
-              <div className="absolute right-0 top-full w-max opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800 text-purple-400 text-xs px-2 py-1 border border-purple-700 rounded shadow-md z-10">
+              <div className="absolute right-0 top-full w-max opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800 text-#00ce88 text-xs px-2 py-1 border border-purple-700 rounded shadow-md z-10">
                 {publicKey.toBase58()}
               </div>
             )}
