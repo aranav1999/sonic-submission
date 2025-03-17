@@ -169,11 +169,14 @@ function CreatePostModal({
               Upload Image (optional)
             </label>
             {imagePreview && (
-              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#00ce88]/30 mb-2">
-                <img
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#16f195]/30 mb-2">
+                <Image
                   src={imagePreview}
                   alt="Preview"
                   className="w-full h-full object-cover"
+                  width={400}
+                  height={160}
+                  unoptimized // For base64 data URLs
                 />
               </div>
             )}
@@ -376,11 +379,14 @@ function EditPostModal({
               Update Image (optional)
             </label>
             {imagePreview && (
-              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#00ce88]/30 mb-2">
-                <img
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-[#16f195]/30 mb-2">
+                <Image
                   src={imagePreview}
                   alt="Preview"
                   className="w-full h-full object-cover"
+                  width={400}
+                  height={160}
+                  unoptimized // For base64 data URLs
                 />
               </div>
             )}
@@ -1026,10 +1032,13 @@ export default function CreatorProfileClient({
                           {/* Gated Post Content (blurred) */}
                           {post.imageUrl ? (
                             <div className="relative h-48 overflow-hidden">
-                              <img
+                              <Image
                                 src={post.imageUrl}
                                 alt="gated content"
                                 className="w-full h-full object-cover filter blur-xl scale-110 opacity-50"
+                                width={220}
+                                height={192}
+                                unoptimized
                               />
                               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e1f1a]/50 to-[#0e1f1a]/80">
                                 <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00ce88] to-[#9b5de5] flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,158,198,0.5)] animate-pulse">
@@ -1120,10 +1129,13 @@ export default function CreatorProfileClient({
                           {/* Visible Post Content */}
                           {post.imageUrl ? (
                             <div className="h-48 overflow-hidden">
-                              <img
+                              <Image
                                 src={post.imageUrl}
                                 alt="post"
                                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                                width={220}
+                                height={192}
+                                unoptimized
                               />
                             </div>
                           ) : (
@@ -1255,10 +1267,13 @@ export default function CreatorProfileClient({
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {imageUrl ? (
               <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-[#00ce88]/30">
-                <img
+                <Image
                   src={imageUrl}
                   alt="Profile preview"
                   className="w-full h-full object-cover"
+                  width={96}
+                  height={96}
+                  unoptimized // For base64 data URLs
                 />
               </div>
             ) : (
