@@ -12,6 +12,7 @@ import {
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import styles from "./CreatorProfile.module.css";
+import Image from "next/image";
 
 // --- Define the Post interface for client-side usage ---
 interface IPost {
@@ -554,25 +555,32 @@ export default function CreatorProfileClient({
     return (
       <>
         {/* Profile Display */}
-        <div className={styles.profileSection}>
-          <div className={styles.profileImageContainer}>
+        <div className={`${styles.profileSection}  `}>
+          <div>
             {imageUrl ? (
-              <img src={imageUrl} alt={name} className={styles.profileImage} />
+              <Image
+                src={imageUrl}
+                alt={name}
+                className={styles.profileImage}
+                width={150}
+                height={150}
+              />
             ) : (
               <div className={styles.noProfileImage}>No profile image</div>
             )}
           </div>
           <div className={styles.profileInfo}>
             <h1 className={styles.creatorName}>{name}</h1>
-            {description && (
-              <p className={styles.creatorDescription}>{description}</p>
-            )}
             <p className={styles.walletAddress}>
               Wallet: {creatorData.userWalletAddress.substring(0, 6)}...
               {creatorData.userWalletAddress.substring(
                 creatorData.userWalletAddress.length - 4
               )}
             </p>
+
+            {description && (
+              <p className={styles.creatorDescription}>{description}</p>
+            )}
           </div>
           <div className={styles.subscribeContainer}>
             <button className={styles.subscribeButton}>
@@ -613,7 +621,7 @@ export default function CreatorProfileClient({
               posts.map((post) => {
                 const isVisible = canViewPost(post);
                 return (
-                  <div key={post._id} className={styles.postCard}>
+                  <div key={post._id} className={`${styles.postCard}`}>
                     {!isVisible && post.isGated ? (
                       <div className={styles.gatedPostContainer}>
                         {post.imageUrl ? (
