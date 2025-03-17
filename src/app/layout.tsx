@@ -3,6 +3,15 @@ import "./globals.css";
 import Script from "next/script";
 import Providers from "./providers";
 import Layout from "@/components/Layout";
+import { Tektur } from "next/font/google";
+
+// Initialize the Tektur font
+const tektur = Tektur({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-tektur", // Add variable name for CSS usage
+});
 
 export const metadata: Metadata = {
   title: "FanPit",
@@ -15,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${tektur.variable} ${tektur.className}`}>
       <head>
         <Script
           id="crypto-polyfill"
@@ -29,7 +38,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
+      <body className={tektur.className}>
         {/* 
           We wrap Providers, and inside Providers we place our Layout 
           to ensure the Wallet context is available before Layout uses it.

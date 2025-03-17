@@ -582,11 +582,11 @@ export default function CreatorProfileClient({
               <p className={styles.creatorDescription}>{description}</p>
             )}
           </div>
-          <div className={styles.subscribeContainer}>
+          {/* <div className={styles.subscribeContainer}>
             <button className={styles.subscribeButton}>
               Subscribe for {userData?.subscriptionAmount || 0} SOL
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Edit Button (if owner) */}

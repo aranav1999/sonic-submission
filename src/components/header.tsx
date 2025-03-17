@@ -28,7 +28,7 @@ const Header = () => {
   const creatorLinkHref = isCreator ? `/creator/${creatorId}` : "/creator-onboarding";
 
   return (
-    <header className="w-full bg-gradient-to-r from-black via-[#051d38] to-black text-white border-b border-blue-800  h-[55px]">
+    <header className="w-full bg-gradient-to-r from-black via-[#26171d] to-black text-white border-b border-[#331f26]  h-[55px]">
       <div className="max-w-5xl mx-auto px-6 pt-[12px] flex items-center  justify-between">
         {/* Logo */}
         <Link
@@ -59,7 +59,7 @@ const Header = () => {
 
           {/* Wallet Button */}
           <div className="relative group">
-            <WalletMultiButton className="bg-gray-800 border border-gray-700 rounded-md px-3 py-1 text-xs font-medium hover:bg-purple-400 hover:text-black transition duration-300" />
+            <WalletMultiButton style={{ backgroundColor: '#ff9ec6', color: 'black' }}/>
             {publicKey && (
               <div className="absolute right-0 top-full w-max opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800 text-purple-400 text-xs px-2 py-1 border border-purple-700 rounded shadow-md z-10">
                 {publicKey.toBase58()}
