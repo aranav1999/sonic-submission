@@ -22,6 +22,7 @@ import {
 import { Keypair, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { PublicKey } from "@metaplex-foundation/js";
+import {walletAdapterIdentity} from "@metaplex-foundation/umi-signer-wallet-adapters";
 
 
 async function deployCollectionViaUmi(
