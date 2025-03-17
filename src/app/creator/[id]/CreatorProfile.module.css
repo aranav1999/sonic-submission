@@ -8,6 +8,7 @@
   left: 50%;
   transform: translateX(-50%);
   box-sizing: border-box;
+  z-index: 1; /* Add a lower z-index */
 }
 
 
@@ -596,6 +597,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  pointer-events: auto; /* Ensure this is set to auto when visible */
 }
 
 .modalContainer {

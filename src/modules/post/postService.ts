@@ -9,8 +9,11 @@ export async function createPost(data: {
   imageUrl?: string;
   isGated?: boolean;
   price?: number;
+  nftName?: string;
+  nftUri?: string;
 }): Promise<IPost> {
-  const { creatorId, statusText, imageUrl, isGated, price } = data;
+  const { creatorId, statusText, imageUrl, isGated, price, nftName, nftUri } =
+    data;
 
   // Simple validation: if isGated is true, ensure price is provided
   if (isGated && (price === null || price === undefined)) {
@@ -27,6 +30,8 @@ export async function createPost(data: {
     isGated: isGated || false,
     price: finalPrice,
     accessibleBy: [], // start empty
+    nftName: nftName || "",
+    nftUri: nftUri || "",
   });
 
   return newPost;
@@ -44,6 +49,8 @@ export async function updatePost(
     imageUrl?: string; // if present, replace; if undefined, leave existing
     isGated: boolean;
     price: number;
+    nftName?: string;
+    nftUri?: string;
   }
 ): Promise<IPost | null> {
   const post = await Post.findById(postId);
@@ -56,6 +63,14 @@ export async function updatePost(
   }
   post.isGated = data.isGated;
   post.price = data.isGated ? data.price : 0;
+
+  // Update new NFT metadata fields if provided
+  if (typeof data.nftName === "string") {
+    post.nftName = data.nftName;
+  }
+  if (typeof data.nftUri === "string") {
+    post.nftUri = data.nftUri;
+  }
 
   await post.save();
   return post;
