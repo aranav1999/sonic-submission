@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import styles from "./CreatorOnboardingForm.module.css";
 import { useWallet } from "@solana/wallet-adapter-react";
+import Image from "next/image";
 
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
@@ -23,7 +23,6 @@ import { Keypair, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { PublicKey } from "@metaplex-foundation/js";
 import {walletAdapterIdentity} from "@metaplex-foundation/umi-signer-wallet-adapters";
-
 
 async function deployCollectionViaUmi(
   rpcEndpoint: string,
@@ -57,7 +56,7 @@ async function deployCollectionViaUmi(
         creators: [
           {
             address: umiPubKey(walletPubkey),
-            percentage: 100, // entire share to user’s wallet
+            percentage: 100, // entire share to user's wallet
           },
         ],
         ruleSet: ruleSet("None"),
@@ -83,7 +82,7 @@ export default function CreatorOnboardingForm() {
   const [existingProfile, setExistingProfile] = useState(false);
 
   /**
-   * NEW: Collection-related fields
+   * Collection-related fields
    */
   const [collectionName, setCollectionName] = useState("");
   const [collectionUri, setCollectionUri] = useState("");
@@ -236,154 +235,200 @@ export default function CreatorOnboardingForm() {
   }
 
   return (
-    <div className={styles.card}>
-      <h2 className={styles.title}>
+    <div className="relative z-10 max-w-2xl mx-auto overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b23]/90 via-[#251920]/80 to-[#1f151c]/70 p-8 shadow-xl backdrop-blur-sm border border-[#3a2a33]/20">
+      <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#ff9ec6] opacity-5 blur-[80px] rounded-full"></div>
+      <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#9b5de5] opacity-5 blur-[80px] rounded-full"></div>
+      
+      <h2 className="text-2xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
         {existingProfile ? "Update Your Profile" : "Join as a Creator"}
       </h2>
-      <p className={styles.subtitle}>
+      <p className="text-[#ff9ec6]/70 mb-6">
         {existingProfile
           ? "Update your profile information below."
           : "Tell us about yourself and, if desired, deploy a new Metaplex collection."}
       </p>
-      <form onSubmit={handleSubmit} className={styles.form}>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
-        <div className={styles.inputGroup}>
-          <label htmlFor="creatorName" className={styles.label}>
+        <div className="space-y-2">
+          <label htmlFor="creatorName" className="block text-sm font-medium text-gray-300">
             Name
           </label>
           <input
             id="creatorName"
             type="text"
-            className={styles.input}
+            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name or creative handle"
             required
           />
         </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="creatorDesc" className={styles.label}>
+        
+        <div className="space-y-2">
+          <label htmlFor="creatorDesc" className="block text-sm font-medium text-gray-300">
             Description
           </label>
           <textarea
             id="creatorDesc"
-            className={styles.textarea}
+            className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Share a little about your work..."
             rows={4}
           />
         </div>
-
+        
         {/* Profile Image */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Profile Image</label>
-          <div className={styles.imageUploadContainer}>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">
+            Profile Image
+          </label>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             {imageUrl ? (
-              <div className={styles.imagePreview}>
-                <img src={imageUrl} alt="Profile preview" />
+              <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-[#ff9ec6]/30 shadow-[0_0_15px_rgba(255,158,198,0.2)] group">
+                <Image
+                  src={imageUrl}
+                  alt="Profile preview"
+                  width={128}
+                  height={128}
+                  className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1f151c]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
             ) : (
-              <div className={styles.imagePlaceholder}>
-                <span>No image selected</span>
+              <div className="w-32 h-32 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#2f1f25] to-[#1f151c] text-[#ff9ec6] border-2 border-[#3a2a33]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
             )}
-            <div className={styles.uploadOptions}>
+            
+            <div className="flex-grow">
               <input
                 type="file"
                 id="imageUpload"
                 accept="image/*"
                 onChange={handleFileChange}
-                className={styles.fileInput}
+                className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#ff9ec6]/20 file:text-[#ff9ec6] hover:file:bg-[#ff9ec6]/30 cursor-pointer"
               />
-              <label htmlFor="imageUpload" className={styles.uploadButton}>
-                {imageFile ? "Change image" : "Upload from device"}
-              </label>
+              <p className="mt-2 text-xs text-gray-400">
+                Recommended: Square image, at least 500x500 pixels
+              </p>
             </div>
           </div>
         </div>
-
+        
         {/* Token-Gated Toggle */}
-        <div className={styles.checkboxGroup}>
+        <div className="flex items-center">
           <input
             type="checkbox"
             id="gatingToggle"
             checked={gatingEnabled}
             onChange={(e) => setGatingEnabled(e.target.checked)}
-            className={styles.checkbox}
+            className="w-4 h-4 text-[#ff9ec6] bg-[#2f1f25] border-[#3a2a33] rounded focus:ring-[#ff9ec6]/50"
           />
-          <label htmlFor="gatingToggle" className={styles.checkboxLabel}>
+          <label htmlFor="gatingToggle" className="ml-2 text-sm font-medium text-gray-300">
             Enable token-gated content
           </label>
         </div>
-
+        
         {/* Deploy Collection Fields (Only if new) */}
         {!existingProfile && (
-          <>
-            <hr style={{ margin: "20px 0", borderColor: "#444" }} />
-            <h3 style={{ color: "#ff4081" }}>Metaplex Collection Details</h3>
-            <p style={{ fontSize: "0.9rem", color: "#aaa", marginBottom: 10 }}>
+          <div className="mt-8 pt-6 border-t border-[#3a2a33]/50">
+            <h3 className="text-lg font-semibold text-[#ff9ec6] mb-3">Metaplex Collection Details</h3>
+            <p className="text-sm text-gray-400 mb-4">
               These fields are used to deploy a new collection NFT on Solana.
             </p>
-            <div className={styles.inputGroup}>
-              <label htmlFor="collectionName" className={styles.label}>
-                Collection Name
-              </label>
-              <input
-                id="collectionName"
-                type="text"
-                className={styles.input}
-                value={collectionName}
-                onChange={(e) => setCollectionName(e.target.value)}
-                placeholder="e.g. My Exclusive Collection"
-              />
+            
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label htmlFor="collectionName" className="block text-sm font-medium text-gray-300">
+                  Collection Name
+                </label>
+                <input
+                  id="collectionName"
+                  type="text"
+                  className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+                  value={collectionName}
+                  onChange={(e) => setCollectionName(e.target.value)}
+                  placeholder="e.g. My Exclusive Collection"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="collectionUri" className="block text-sm font-medium text-gray-300">
+                  Metadata URI (auto-uploaded to IPFS)
+                </label>
+                <input
+                  id="collectionUri"
+                  type="text"
+                  className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200 opacity-75"
+                  value={collectionUri}
+                  readOnly
+                  placeholder="Will be set after IPFS upload"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="collectionRoyalties" className="block text-sm font-medium text-gray-300">
+                  Royalty (basis points)
+                </label>
+                <input
+                  id="collectionRoyalties"
+                  type="number"
+                  className="w-full px-4 py-2.5 bg-[#2f1f25]/50 border border-[#3a2a33] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff9ec6]/50 focus:border-[#ff9ec6]/50 transition-all duration-200"
+                  min={0}
+                  max={10000}
+                  value={royaltyBasisPoints}
+                  onChange={(e) => setRoyaltyBasisPoints(Number(e.target.value))}
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  500 = 5%, 1000 = 10%, etc.
+                </p>
+              </div>
             </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="collectionUri" className={styles.label}>
-                Metadata URI (auto-uploaded to IPFS)
-              </label>
-              <input
-                id="collectionUri"
-                type="text"
-                className={styles.input}
-                value={collectionUri}
-                readOnly
-                placeholder="Will be set after IPFS upload"
-              />
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="collectionRoyalties" className={styles.label}>
-                Royalty (basis points)
-              </label>
-              <input
-                id="collectionRoyalties"
-                type="number"
-                className={styles.input}
-                min={0}
-                max={10000}
-                value={royaltyBasisPoints}
-                onChange={(e) => setRoyaltyBasisPoints(Number(e.target.value))}
-              />
-              <small style={{ color: "#888" }}>
-                500 = 5%, 1000 = 10%, etc.
-              </small>
-            </div>
-          </>
+          </div>
         )}
-
+        
         <button
           type="submit"
-          className={styles.submitButton}
+          className="relative overflow-hidden w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
           disabled={loading}
         >
-          {loading
-            ? "Saving Profile..."
-            : existingProfile
-            ? "Update Profile"
-            : "Save Profile & Deploy Collection"}
+          <span className="relative z-10">
+            {loading
+              ? "Saving Profile..."
+              : existingProfile
+              ? "Update Profile"
+              : "Save Profile & Deploy Collection"}
+          </span>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
         </button>
       </form>
-      {message && <div className={styles.message}>{message}</div>}
+      
+      {message && (
+        <div className="mt-6 px-4 py-3 rounded-lg bg-[#ff9ec6]/10 border border-[#ff9ec6]/20 text-[#ff9ec6]">
+          {message}
+        </div>
+      )}
+      
+      {!publicKey && (
+        <div className="mt-6 px-4 py-3 rounded-lg bg-[#ff9ec6]/10 border border-[#ff9ec6]/20 text-[#ff9ec6] text-center">
+          Please connect your wallet to continue
+        </div>
+      )}
+      
+      {loading && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#2a1b23] p-6 rounded-xl shadow-2xl border border-[#ff9ec6]/20 flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-[#ff9ec6]/20 border-t-[#ff9ec6] rounded-full animate-spin mb-4"></div>
+            <p className="text-[#ff9ec6]">Processing your request...</p>
+            <p className="text-xs text-gray-400 mt-2">This may take a moment</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
