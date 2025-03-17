@@ -49,7 +49,7 @@ export default async function CreatorProfilePage({
     : null;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} >
       <CreatorProfileClient creatorData={creatorPlain} userData={userPlain} />
     </div>
   );
