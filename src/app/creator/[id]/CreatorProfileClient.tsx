@@ -766,30 +766,55 @@ export default function CreatorProfileClient({
                             {post.price} SOL will be deducted from your wallet
                           </p>
                           <button
-  className="relative overflow-hidden w-full px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
-  onClick={() => handlePurchasePost(post)}
-  disabled={purchasing}
->
-  <span className="relative z-10 flex items-center justify-center">
-    {purchasing ? (
-      <>
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#1f151c]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Processing...
-      </>
-    ) : (
-      <>
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-        </svg>
-        Unlock for {post.price} SOL
-      </>
-    )}
-  </span>
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
-</button>
+                            className="relative overflow-hidden w-full px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff9ec6] to-[#ff7eb6] text-[#1f151c] font-medium shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,158,198,0.5)] disabled:opacity-70 disabled:cursor-not-allowed group"
+                            onClick={() => handlePurchasePost(post)}
+                            disabled={purchasing}
+                          >
+                            <span className="relative z-10 flex items-center justify-center">
+                              {purchasing ? (
+                                <>
+                                  <svg
+                                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#1f151c]"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                  </svg>
+                                  Processing...
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-1"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  Mint to Unlock for {post.price} SOL
+                                </>
+                              )}
+                            </span>
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_80%)] opacity-10 transition-all duration-1000 ease-out group-hover:opacity-20 group-hover:scale-125"></div>
+                          </button>
                           {purchaseError && (
                             <p style={{ color: "red" }}>{purchaseError}</p>
                           )}
@@ -819,21 +844,26 @@ export default function CreatorProfileClient({
 
                     {/* Edit Button for the Owner */}
                     {canEdit && (
-  <div className="mt-2 px-3 pb-3">
-    <button
-      className="w-full relative overflow-hidden px-4 py-2 rounded-lg bg-gradient-to-r from-[#3a2a33] to-[#2f1f25] text-[#ff9ec6] text-sm font-medium border border-[#ff9ec6]/20 transition-all duration-300 hover:shadow-[0_0_10px_rgba(255,158,198,0.3)] group"
-      onClick={() => openEditModal(post)}
-    >
-      <span className="relative z-10 flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-        </svg>
-        Edit Post
-      </span>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,158,198,0.08)_0%,_transparent_80%)] opacity-0 transition-all duration-1000 ease-out group-hover:opacity-100 group-hover:scale-125"></div>
-    </button>
-  </div>
-)}
+                      <div className="mt-2 px-3 pb-3">
+                        <button
+                          className="w-full relative overflow-hidden px-4 py-2 rounded-lg bg-gradient-to-r from-[#3a2a33] to-[#2f1f25] text-[#ff9ec6] text-sm font-medium border border-[#ff9ec6]/20 transition-all duration-300 hover:shadow-[0_0_10px_rgba(255,158,198,0.3)] group"
+                          onClick={() => openEditModal(post)}
+                        >
+                          <span className="relative z-10 flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                            Edit Post
+                          </span>
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,158,198,0.08)_0%,_transparent_80%)] opacity-0 transition-all duration-1000 ease-out group-hover:opacity-100 group-hover:scale-125"></div>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })
