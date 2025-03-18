@@ -1,17 +1,9 @@
+// src/app/api/posts/[postId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import { updatePost } from "@/modules/post/postService";
+import { uploadImageToIpfs } from "@/lib/ipfsUploadImage";
 
-/**
- * PUT /api/posts/[postId]
- * Expects multipart/form-data:
- * - statusText (string) -> up to 50 words
- * - isGated ("true"/"false")
- * - price (string -> number) only if isGated
- * - nftName (string) optional
- * - nftUri (string) optional (if the metadata URI is updated)
- * - image (File) optional
- */
 export async function PUT(
   req: NextRequest,
   { params }: { params: { postId: string } }
@@ -20,7 +12,7 @@ export async function PUT(
     await dbConnect();
     const postId = params.postId;
 
-    // Ensure it's multipart
+    // Ensure it's multipart/form-data
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
@@ -33,7 +25,6 @@ export async function PUT(
     const rawStatusText = formData.get("statusText")?.toString() || "";
     const isGatedVal = formData.get("isGated")?.toString() || "false";
     const priceVal = formData.get("price")?.toString() || "";
-    // New fields for NFT metadata
     const nftName = formData.get("nftName")?.toString() || "";
     const nftUri = formData.get("nftUri")?.toString() || "";
     const file = formData.get("image") as File | null;
@@ -61,9 +52,11 @@ export async function PUT(
 
     let imageUrl: string | undefined;
     if (file) {
-      // Convert file to base64
-      const buffer = Buffer.from(await file.arrayBuffer());
-      imageUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
+      imageUrl =( await uploadImageToIpfs(
+        file,
+        nftName || "Unnamed Post NFT",
+        rawStatusText.trim()
+      )).ipfsImageUrl;
     }
 
     const updatedPost = await updatePost(postId, {
@@ -72,7 +65,7 @@ export async function PUT(
       isGated,
       price,
       nftName,
-      nftUri,
+      nftUri: imageUrl || nftUri,
     });
 
     if (!updatedPost) {

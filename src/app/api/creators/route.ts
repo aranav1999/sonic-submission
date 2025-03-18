@@ -1,17 +1,9 @@
+// src/app/api/creators/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import { upsertCreator } from "@/modules/creator/creatorService";
+import { uploadImageToIpfs } from "@/lib/ipfsUploadImage";
 
-/**
- * POST /api/creators
- * Accepts multipart/form-data with fields:
- * - userWalletAddress (string)
- * - name (string)
- * - description (string, optional)
- * - gatingEnabled ("true" or "false")
- * - image (File, optional)
- * - collectionMint (string, optional; new field storing the mint address)
- */
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
@@ -37,20 +29,17 @@ export async function POST(req: NextRequest) {
     let imageUrl = "";
     const imageFile = formData.get("image") as File | null;
     if (imageFile) {
-      // Convert the image file to base64
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      imageUrl = `data:${imageFile.type};base64,${buffer.toString("base64")}`;
+      imageUrl = (await uploadImageToIpfs(imageFile, name, description)).ipfsImageUrl;
     }
 
-    // Upsert the creator with these fields
+    // Upsert the creator using the imageUrl from IPFS
     const creator = await upsertCreator({
       userWalletAddress,
       name,
       description,
-      imageUrl, // may be "" if no file
+      imageUrl,
       gatingEnabled,
-      collectionMint, // new field
+      collectionMint,
     });
 
     return NextResponse.json({ creator }, { status: 200 });

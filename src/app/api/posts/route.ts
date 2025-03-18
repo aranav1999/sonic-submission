@@ -1,7 +1,8 @@
+// src/app/api/posts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import { createPost, getPostsByCreatorId } from "@/modules/post/postService";
-import { Buffer } from "buffer";
+import { uploadImageToIpfs } from "@/lib/ipfsUploadImage";
 
 /**
  * GET /api/posts?creatorId=xxxx
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
   try {
     await dbConnect();
 
-    // We need to ensure it's multipart
+    // Ensure it's multipart/form-data
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     const rawStatusText = formData.get("statusText")?.toString() || "";
     const isGatedVal = formData.get("isGated")?.toString() || "false";
     const priceVal = formData.get("price")?.toString() || "";
-    const nftName = formData.get("nftName")?.toString() || ""; // NEW FIELD
+    const nftName = formData.get("nftName")?.toString() || "";
     const file = formData.get("image") as File | null;
 
     // Basic max 50 words check
@@ -68,7 +69,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert gating
     const isGated = isGatedVal === "true";
     let price = 0;
     if (isGated && priceVal) {
@@ -81,60 +81,27 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Convert the image file to base64 as fallback post image
+    let finMetadataUri = "";
     let imageUrl = "";
     if (file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      imageUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
-    }
-
-    // (A) Optionally upload metadata to IPFS, if there's an image
-    //     We'll store the resulting metadataUri in the new "nftUri" field.
-    let metadataUri = "";
-    if (file) {
-      // We'll replicate the logic from ipfs/route.ts for a single-file upload
-      const arrayBuffer = await file.arrayBuffer();
-      const fileBuffer = Buffer.from(arrayBuffer);
-
-      // Build a formData for the Pump Fun IPFS API
-      const ipfsFormData = new FormData();
-      const fileName = `post-image-${Date.now()}.png`;
-      ipfsFormData.append(
-        "file",
-        new Blob([fileBuffer], { type: file.type }),
-        fileName
+      const { metadataUri, ipfsImageUrl } = await uploadImageToIpfs(
+        file,
+        nftName || "Unnamed Post NFT",
+        rawStatusText.trim()
       );
-      // Provide the NFT name + post text as the "metadata"
-      ipfsFormData.append("name", nftName || "Unnamed Post NFT");
-      ipfsFormData.append("description", rawStatusText.trim());
-
-      // For clarity, we could also pass a "symbol" if needed:
-      // ipfsFormData.append("symbol", "POST");
-
-      // Call Pump Fun IPFS
-      const ipfsRes = await fetch("https://pump.fun/api/ipfs", {
-        method: "POST",
-        body: ipfsFormData,
-      });
-      if (!ipfsRes.ok) {
-        throw new Error(
-          `Failed to upload to Pump Fun IPFS: ${ipfsRes.statusText}`
-        );
-      }
-      const json = (await ipfsRes.json()) as { metadataUri: string };
-      metadataUri = json.metadataUri || "";
+      finMetadataUri = metadataUri;
+      imageUrl = ipfsImageUrl;
     }
 
-    // (B) Create the post with the new fields: nftName, nftUri
+    // Create the post with the IPFS image URL used for both imageUrl and nftUri
     const post = await createPost({
       creatorId,
       statusText: rawStatusText.trim(),
       imageUrl,
       isGated,
       price,
-      // Pass them to the DB creation:
       nftName,
-      nftUri: metadataUri,
+      nftUri: finMetadataUri, // use the same IPFS URL
     });
 
     return NextResponse.json({ post }, { status: 201 });
