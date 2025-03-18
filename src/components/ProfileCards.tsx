@@ -4,6 +4,9 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+// Create a separate CSS file for the marquee animation
+// This will be in a new file: src/styles/marquee.css
+// Add this to your global CSS import in layout.js or page.js
 const MarqueeCards = async () => {
   let creators: any = [];
 
@@ -22,10 +25,14 @@ const MarqueeCards = async () => {
     );
   }
 
+  // Create multiple copies to ensure enough content for scrolling
+  const displayCreators = [...creators, ...creators, ...creators];
+
   return (
-    <div className="relative w-full overflow-hidden py-4">
-      <div className="flex gap-6 w-max animate-marquee">
-        {[...creators, ...creators].map((creator, i) => (
+    <div className="marquee-wrapper py-4 w-full overflow-hidden">
+      {/* Use regular Tailwind classes and custom classes that are defined in your global CSS */}
+      <div className="marquee-content flex gap-6 w-max">
+        {displayCreators.map((creator, i) => (
           <Link
             key={`${creator._id?.toString()}-${i}`}
             href={`/creator/${creator._id?.toString()}`}
@@ -34,7 +41,7 @@ const MarqueeCards = async () => {
             {creator.imageUrl ? (
               <Image
                 src={creator.imageUrl}
-                alt={creator.name}
+                alt={creator.name || "Creator"}
                 width={200}
                 height={300}
                 className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl group-hover:brightness-110 transition-all duration-300"
@@ -62,7 +69,7 @@ const MarqueeCards = async () => {
                   {creator.imageUrl ? (
                     <Image
                       src={creator.imageUrl}
-                      alt={creator.name}
+                      alt={creator.name || "Creator"}
                       width={40}
                       height={40}
                       className="w-full h-full object-cover rounded-full"
@@ -79,7 +86,7 @@ const MarqueeCards = async () => {
                     {creator.name || "Unknown Creator"}
                   </span>
                   {creator.description && (
-                    <span className="text-xs text-[#1ab071]/70 truncate group-hover:text-[#1ab071] transition-all duration-300">
+                    <span className="text-xs text-[#1ab071]/70 truncate group-hover:text-[#1ab071] transition-all duration-300 max-w-[120px]">
                       {creator.description}
                     </span>
                   )}
