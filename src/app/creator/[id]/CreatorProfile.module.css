@@ -5,7 +5,7 @@
   padding: 2rem;
   color: #e0e0e0;
   position: relative;
-  left: 50%;
+  left: 42%;
   transform: translateX(-50%);
   box-sizing: border-box;
   z-index: 1; /* Add a lower z-index */

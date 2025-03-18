@@ -715,7 +715,29 @@ export default function CreatorProfileClient({
       setPurchaseSuccess("");
       setPurchasing(true);
 
-      // 1) Transfer lamports from buyer => creator
+      // 1) If the post is gated and a collection exists, mint the NFT first.
+      // if (creatorData.collectionMint) {
+      //   console.log("Minting NFT from the creator's collection...");
+      //   const walletAdapter = {
+      //     publicKey,
+      //     signTransaction,
+      //     sendTransaction: async (tx: any) =>
+      //       sendTransaction(tx, new Connection(getRpcEndpoint())),
+      //   };
+      //   const mintedName = post.nftName || `Post NFT #${post._id}`;
+      //   const mintedUri = post.nftUri || "";
+      //   // If minting fails, the error will be thrown and the subsequent payment will not execute.
+      //   await mintGatedNFT(
+      //     getRpcEndpoint(),
+      //     walletAdapter,
+      //     creatorData.collectionMint,
+      //     mintedName,
+      //     mintedUri
+      //   );
+      //   console.log("NFT minted successfully!");
+      // }
+
+      // 2) Transfer lamports from buyer to creator only if NFT minting was successful.
       const connection = new Connection(getRpcEndpoint(), "confirmed");
       const creatorWallet = new PublicKey(creatorData.userWalletAddress);
       const lamportsToSend = (post.price || 0) * LAMPORTS_PER_SOL;
@@ -732,38 +754,6 @@ export default function CreatorProfileClient({
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "confirmed");
       console.log("Payment transaction confirmed:", signature);
-
-      // 2) [OPTIONAL Mint NFT call]
-      //    We'll IGNORE any minting errors and ALWAYS show success.
-      if (creatorData.collectionMint) {
-        try {
-          console.log("Minting NFT from the creator's collection...");
-
-          const walletAdapter = {
-            publicKey,
-            signTransaction,
-            sendTransaction: async (tx: any) =>
-              sendTransaction(tx, new Connection(getRpcEndpoint())),
-          };
-
-          const mintedName = post.nftName || `Post NFT #${post._id}`;
-          const mintedUri = post.nftUri || "";
-
-          await mintGatedNFT(
-            getRpcEndpoint(),
-            walletAdapter,
-            creatorData.collectionMint,
-            mintedName,
-            mintedUri
-          );
-
-          console.log("NFT minted successfully!");
-        } catch (mintErr: any) {
-          // HIDE the NFT mint error from users:
-          console.error("Ignoring NFT mint error:", mintErr);
-          // We do NOT show the user any error; we simply proceed.
-        }
-      }
 
       // 3) Unlock the gated post in our DB
       const unlockRes = await fetch("/api/posts/unlock", {
@@ -785,7 +775,6 @@ export default function CreatorProfileClient({
         prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
       );
 
-      // INSTEAD of an alert, show a success UI box:
       setPurchaseSuccess(
         "Successfully purchased and unlocked the post! NFT minted successfully."
       );
