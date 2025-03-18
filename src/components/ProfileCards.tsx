@@ -85,7 +85,7 @@ const MarqueeCards: React.FC<MarqueeCardsProps> = ({ creators = [] }) => {
                     {creator.name || "Unknown Creator"}
                   </span>
                   {creator.description && (
-                    <span className="text-xs text-[#1ab071]/70 truncate group-hover:text-[#1ab071] transition-all duration-300">
+                    <span className="text-xs text-[#1ab071]/70 truncate group-hover:text-[#1ab071] transition-all duration-300 max-w-[120px]">
                       {creator.description}
                     </span>
                   )}
