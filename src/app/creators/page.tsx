@@ -11,7 +11,7 @@ export const revalidate = 60; // Revalidate every 60 seconds
 // Loading skeleton component
 function CreatorsLoadingSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center max-w-6xl mx-auto">
       {[...Array(8)].map((_, i) => (
         <div key={i} className="h-[300px] w-[220px] rounded-2xl bg-gradient-to-b from-[#0e211c]/50 to-[#0e211c] animate-pulse"></div>
       ))}
@@ -40,7 +40,7 @@ async function CreatorsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center max-w-6xl mx-auto">
       {creators.map((creator: ICreator, index: number) => (
         <Link
           href={`/creator/${creator._id?.toString()}`}
