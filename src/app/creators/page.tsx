@@ -1,12 +1,11 @@
+'use client';
+
 import Link from "next/link";
 import { ICreator } from "@/modules/creator/creatorModel";
 import { dbConnect } from "@/lib/db";
 import { getAllCreators } from "@/modules/creator/creatorService";
 import Image from "next/image";
-import { Suspense } from 'react';
-
-// Change from force-dynamic to revalidate
-export const revalidate = 60; // Revalidate every 60 seconds
+import { Suspense, useState, useEffect } from 'react';
 
 // Loading skeleton component
 function CreatorsLoadingSkeleton() {
@@ -19,16 +18,38 @@ function CreatorsLoadingSkeleton() {
   );
 }
 
-// Separate component for the creators list
-async function CreatorsList() {
-  await dbConnect();
-  // Assuming your service supports pagination, otherwise implement it
-  const creators = await getAllCreators();
+// Convert CreatorsList to a client component that fetches data
+function CreatorsList({ searchQuery = '' }) {
+  const [creators, setCreators] = useState<ICreator[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchCreators = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/creators${searchQuery ? `?query=${encodeURIComponent(searchQuery)}` : ''}`);
+        if (!response.ok) throw new Error('Failed to fetch creators');
+        const data = await response.json();
+        setCreators(data);
+      } catch (err) {
+        setError('Failed to load creators');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCreators();
+  }, [searchQuery]);
+
+  if (loading) return <CreatorsLoadingSkeleton />;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
 
   if (creators.length === 0) {
     return (
       <div className="flex flex-col items-center text-center py-10 text-[#00ce88]">
-        <p>No creators found. Be the first to join our community!</p>
+        <p>{searchQuery ? `No creators found matching "${searchQuery}"` : "No creators found. Be the first to join our community!"}</p>
         <Link
           href="/creator-onboarding"
           className="mt-4 px-6 py-3 bg-gradient-to-r from-[#00ce88] to-[#49bf58] text-[#0e211c] rounded-lg hover:shadow-[0_0_15px_rgba(255,158,198,0.6)] transition-all duration-300 font-medium"
@@ -110,6 +131,18 @@ async function CreatorsList() {
 }
 
 export default function CreatorsPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  // Debounce search input to prevent too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   return (
     <div className="w-full py-6 px-4 relative min-h-screen">
       {/* Background gradient effects */}
@@ -146,6 +179,8 @@ export default function CreatorsPage() {
               type="text"
               placeholder="Search creators by name..."
               className="w-full bg-transparent py-3 px-4 text-white placeholder-[#00ce88]/50 focus:outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button className="flex items-center justify-center h-full px-4 text-[#00ce88] hover:text-white transition-colors duration-300">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -157,10 +192,7 @@ export default function CreatorsPage() {
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#00ce88]/30 to-transparent"></div>
         </div>
 
-        {/* Wrap the creators list in Suspense for better loading experience */}
-        <Suspense fallback={<CreatorsLoadingSkeleton />}>
-          <CreatorsList />
-        </Suspense>
+        <CreatorsList searchQuery={debouncedQuery} />
       </div>
     </div>
   );

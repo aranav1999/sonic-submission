@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import { upsertCreator } from "@/modules/creator/creatorService";
 import { uploadImageToIpfs } from "@/lib/ipfsUploadImage";
+import { getAllCreators } from '@/modules/creator/creatorService';
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,5 +47,31 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error uploading image or upserting creator:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const query = searchParams.get('query') || '';
+
+    await dbConnect();
+    const creators = await getAllCreators();
+
+    // Filter creators based on search query
+    const filteredCreators = query
+      ? creators.filter(creator =>
+        creator.name.toLowerCase().includes(query.toLowerCase()))
+      : creators;
+
+    // Add caching headers - cache for 60 seconds
+    return NextResponse.json(filteredCreators, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching creators:', error);
+    return NextResponse.json({ error: 'Failed to fetch creators' }, { status: 500 });
   }
 }
