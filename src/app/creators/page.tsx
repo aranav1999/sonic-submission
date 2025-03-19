@@ -20,33 +20,44 @@ function CreatorsLoadingSkeleton() {
 
 // Convert CreatorsList to a client component that fetches data
 function CreatorsList({ searchQuery = '' }) {
-  const [creators, setCreators] = useState<ICreator[]>([]);
+  const [allCreators, setAllCreators] = useState<ICreator[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Fetch all creators once
   useEffect(() => {
-    const fetchCreators = async () => {
+    const fetchAllCreators = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/creators${searchQuery ? `?query=${encodeURIComponent(searchQuery)}` : ''}`);
-        if (!response.ok) throw new Error('Failed to fetch creators');
+        const response = await fetch('/api/creators');
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch creators: ${response.status}`);
+        }
+
         const data = await response.json();
-        setCreators(data);
+        setAllCreators(Array.isArray(data) ? data : []);
       } catch (err) {
+        console.error('Error fetching creators:', err);
         setError('Failed to load creators');
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCreators();
-  }, [searchQuery]);
+    fetchAllCreators();
+  }, []); // Only fetch once on mount
+
+  // Filter creators based on search query
+  const filteredCreators = searchQuery
+    ? allCreators.filter(creator =>
+      creator.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : allCreators;
 
   if (loading) return <CreatorsLoadingSkeleton />;
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
-  if (creators.length === 0) {
+  if (filteredCreators.length === 0) {
     return (
       <div className="flex flex-col items-center text-center py-10 text-[#00ce88]">
         <p>{searchQuery ? `No creators found matching "${searchQuery}"` : "No creators found. Be the first to join our community!"}</p>
@@ -62,7 +73,7 @@ function CreatorsList({ searchQuery = '' }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center max-w-6xl mx-auto">
-      {creators.map((creator: ICreator, index: number) => (
+      {filteredCreators.map((creator: ICreator, index: number) => (
         <Link
           href={`/creator/${creator._id?.toString()}`}
           key={creator._id?.toString()}
@@ -134,11 +145,11 @@ export default function CreatorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  // Debounce search input to prevent too many API calls
+  // Debounce search input to prevent too many filtering operations
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 300);
+    }, 300); // 300ms delay
 
     return () => clearTimeout(timer);
   }, [searchQuery]);

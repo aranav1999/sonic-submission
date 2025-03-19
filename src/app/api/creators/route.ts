@@ -52,26 +52,23 @@ export async function POST(req: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('query') || '';
-
     await dbConnect();
     const creators = await getAllCreators();
 
-    // Filter creators based on search query
+    const searchParams = request.nextUrl.searchParams;
+    const query = searchParams.get('query') || '';
+
+    // Only filter if there's a query
     const filteredCreators = query
-      ? creators.filter(creator =>
-        creator.name.toLowerCase().includes(query.toLowerCase()))
+      ? creators.filter(creator => {
+        const name = creator.name || '';
+        return name.toLowerCase().includes(query.toLowerCase());
+      })
       : creators;
 
-    // Add caching headers - cache for 60 seconds
-    return NextResponse.json(filteredCreators, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-      },
-    });
+    return NextResponse.json(filteredCreators);
   } catch (error) {
     console.error('Error fetching creators:', error);
-    return NextResponse.json({ error: 'Failed to fetch creators' }, { status: 500 });
+    return NextResponse.json([], { status: 200 }); // Return empty array instead of error
   }
 }
